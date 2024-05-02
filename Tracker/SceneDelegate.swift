@@ -1,9 +1,3 @@
-//
-//  SceneDelegate.swift
-//  Tracker
-//
-//  Created by Pavel Popov on 02.05.2024.
-//
 
 import UIKit
 
