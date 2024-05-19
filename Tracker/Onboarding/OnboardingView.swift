@@ -73,7 +73,9 @@ final class OnboardingView: UIView {
         }
         
         let tabBarController = TabBarController()
-        window.rootViewController = tabBarController
+        let navigationController = UINavigationController(rootViewController: tabBarController)
+        window.rootViewController = navigationController
+        window.makeKeyAndVisible()
     }
 }
 
