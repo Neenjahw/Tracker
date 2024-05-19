@@ -1,7 +1,7 @@
 
 import UIKit
 
-//TODO in next sprints
+//TODO: В следующих спринтах
 //MARK: - IrregularViewController
 final class IrregularViewController: UIViewController {
     

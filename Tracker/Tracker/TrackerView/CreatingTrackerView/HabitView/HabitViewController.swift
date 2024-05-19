@@ -1,11 +1,6 @@
 
 import UIKit
 
-//MARK: - HabitViewControllerDelegate
-protocol HabitViewControllerDelegate: AnyObject {
-    func makeTrackerCategory(with title: String, nameOfTracker: String, schedule: [DayOfWeek: Bool])
-}
-
 //MARK: - HabitViewController
 final class HabitViewController: UIViewController {
     
@@ -24,12 +19,13 @@ final class HabitViewController: UIViewController {
     }
     
     //MARK: - Public Properties
-    weak var delegate: HabitViewControllerDelegate?
     var scheduleCell: ScheduleCell?
     
     //MARK: - Private Properties
-    private var selectedDays: [DayOfWeek: Bool] = [:]
+    private var selectedDays: [DayOfWeek] = []
+    private var trackers: [Tracker] = []
     private var selectedCategories: [String] = []
+    private let dataManager = DataManager.shared
     
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
@@ -103,6 +99,7 @@ final class HabitViewController: UIViewController {
         button.setTitle("Создать", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: UIConstants.createButtonFontSize)
         button.backgroundColor = .ypGray
+        button.isEnabled = false
         button.layer.cornerRadius = UIConstants.createButtonCornerRadius
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
@@ -113,6 +110,10 @@ final class HabitViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initialize()
+    }
+    
+    //MARK: - Private Methods
+    private func updateCreateButtonAvailability() {
         if let text = textField.text, !text.isEmpty, !selectedCategories.isEmpty, !selectedDays.isEmpty {
             createButton.isEnabled = true
             createButton.backgroundColor = .ypBlack
@@ -122,7 +123,10 @@ final class HabitViewController: UIViewController {
         }
     }
     
-    //MARK: - Private Methods
+    //TODO: В следуюищих спринтах
+    //    private func makeTrackerCategory(with title: String, trackers: [Tracker]) -> TrackerRecord {
+    //    }
+    
     @objc private func didTapCancelButton() {
         dismiss(animated: true)
     }
@@ -132,9 +136,7 @@ final class HabitViewController: UIViewController {
             assertionFailure("Invalid window configuration")
             return
         }
-        for selectedCategory in selectedCategories {
-            delegate?.makeTrackerCategory(with: selectedCategory, nameOfTracker: textField.text ?? "", schedule: selectedDays)
-        }
+        
         let tabBarController = TabBarController()
         let navigationController = UINavigationController(rootViewController: tabBarController)
         window.rootViewController = navigationController
@@ -167,8 +169,10 @@ extension HabitViewController: UITextFieldDelegate {
         }
     }
     
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        textField.becomeFirstResponder()
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        updateCreateButtonAvailability()
+        return true
     }
 }
 
@@ -216,7 +220,7 @@ extension HabitViewController: UITableViewDataSource {
             cell.layer.masksToBounds = true
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             let selectedDaysString = selectedDays.map { day in
-                switch day.key {
+                switch day {
                 case .monday:
                     return("Пн")
                 case .tuesday:
@@ -251,17 +255,16 @@ extension HabitViewController: CategoryViewControllerDelegate {
             selectedCategories.append(category)
         }
         tableView.reloadData()
+        updateCreateButtonAvailability()
     }
 }
 
 //MARK: - ScheduleViewControllerDelegate
 extension HabitViewController: ScheduleViewControllerDelegate {
     func didSelect(days: [DayOfWeek]) {
-        selectedDays = [:]
-        for day in days {
-            selectedDays[day] = true
-        }
+        selectedDays = days
         tableView.reloadData()
+        updateCreateButtonAvailability()
     }
 }
 
@@ -311,7 +314,6 @@ extension HabitViewController {
             cancelButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
             createButton.heightAnchor.constraint(equalToConstant: 60),
-//            createButton.leadingAnchor.constraint(equalTo: cancelButton.trailingAnchor, constant: 8),
             createButton.widthAnchor.constraint(equalToConstant: view.frame.width / 2 - 24),
             createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             createButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),

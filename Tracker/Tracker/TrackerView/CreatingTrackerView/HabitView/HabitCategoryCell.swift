@@ -14,7 +14,7 @@ final class HabitCategoryCell: UITableViewCell {
     
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
-       let label = UILabel()
+        let label = UILabel()
         label.text = "Категория"
         label.textColor = .black
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)

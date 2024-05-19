@@ -57,9 +57,9 @@ final class OnboardingViewController: UIViewController {
         
         for i in 0..<slides.count {
             slides[i].frame = CGRect(x: view.frame.width * CGFloat(i),
-                                 y: 0,
-                                 width: view.frame.width,
-                                 height: view.frame.height)
+                                     y: 0,
+                                     width: view.frame.width,
+                                     height: view.frame.height)
             scrollView.addSubview(slides[i])
         }
     }
@@ -76,10 +76,10 @@ extension OnboardingViewController: UIScrollViewDelegate {
         
         if percentHorizontalOffset <= 1 {
             let firstTransForm = CGAffineTransform(scaleX: 1 - percentHorizontalOffset,
-                                              y: 1 - percentHorizontalOffset)
+                                                   y: 1 - percentHorizontalOffset)
             let secondTransform = CGAffineTransform(scaleX: percentHorizontalOffset,
                                                     y: percentHorizontalOffset)
-                                                    
+            
             slides[0].set(transform: firstTransForm)
             slides[1].set(transform: secondTransform)
         }

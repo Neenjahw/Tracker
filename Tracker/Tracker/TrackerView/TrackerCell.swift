@@ -1,8 +1,14 @@
 
 import UIKit
 
+//MARK: -
+protocol TrackerCellDelegate: AnyObject {
+    func completeTracker(id: UUID, at indexPath: IndexPath)
+    func uncompleteTracker(id: UUID, at indexPath: IndexPath)
+}
+
 //MARK: - CollectionViewCell
-final class CollectionCell: UICollectionViewCell {
+final class TrackerCell: UICollectionViewCell {
     
     //MARK: - UIConstants
     private enum UIConstants {
@@ -11,9 +17,18 @@ final class CollectionCell: UICollectionViewCell {
         static let daysCountLabelFontSize: CGFloat = 12
         static let emojiLabelFontSize: CGFloat = 12
         static let trackerCardLabelFontSize: CGFloat = 12
+        static let trackerDoneButtonCornerRadius: CGFloat = 17
     }
     //MARK: - Static Properties
     static let collectionCellIdentifier = "CollectionCell"
+    
+    //MARK: - Public Properties
+    weak var delegate: TrackerCellDelegate?
+    
+    //MARK: - Private Properties
+    private var isCompletedToday: Bool = false
+    private var trackerId: UUID?
+    private var indexPath: IndexPath?
     
     //MARK: - UIModels
     private lazy var trackerCardView: UIView = {
@@ -53,11 +68,13 @@ final class CollectionCell: UICollectionViewCell {
     
     private lazy var trackerDoneButton: UIButton = {
         let button = UIButton()
+        button.layer.masksToBounds = true
+        button.contentMode = .scaleAspectFill
+        button.layer.cornerRadius = UIConstants.trackerDoneButtonCornerRadius
         button.addTarget(self, action: #selector(didTapTrackerDoneButton), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
     
     //MARK: - Init
     override init(frame: CGRect) {
@@ -70,30 +87,43 @@ final class CollectionCell: UICollectionViewCell {
     }
     
     //MARK: - Public Methods
-    public func setTrackerCardLabel(for title: String) {
-        trackerCardLabel.text = title
-    }
-    
-    public func setTrackerCardView(for color: UIColor) {
-        trackerCardView.backgroundColor = color
-    }
-    
-    public func setTintColorTrackerDoneButton(for color: UIColor) {
-        trackerDoneButton.setImage(.trackerPlus.withTintColor(color), for: .normal)
-    }
-    
-    public func setTrackerCardEmojiLabel(for emoji: String) {
-        trackerCardEmojiLabel.text = emoji
+    func configure(with tracker: Tracker, isCompletedToday: Bool, at indexPath: IndexPath) {
+        trackerCardLabel.text = tracker.name
+        trackerCardView.backgroundColor = tracker.color
+        trackerCardEmojiLabel.text = tracker.emoji
+        updateDoneButton()
+        self.isCompletedToday = isCompletedToday
+        self.trackerId = tracker.id
+        self.indexPath = indexPath
     }
     
     //MARK: - Private Methods
+    private func updateDoneButton() {
+        guard let trackerColor = trackerCardView.backgroundColor else { return }
+        let image = isCompletedToday ? UIImage(resource: .trackerDone) : UIImage(resource: .trackerPlus)
+        trackerDoneButton.setImage(image.withTintColor(trackerColor), for: .normal)
+    }
+    
+    func setCompletedState(_ completed: Bool) {
+        isCompletedToday = completed
+        updateDoneButton()
+    }
+    
     @objc private func didTapTrackerDoneButton() {
-        print("Did Taped didTapTrackerDoneButton")
+        guard let trackerId = trackerId, let indexPath = indexPath else {
+            assertionFailure("No trackerId")
+            return
+        }
+        if !isCompletedToday {
+            delegate?.completeTracker(id: trackerId, at: indexPath)
+        } else {
+            delegate?.uncompleteTracker(id: trackerId, at: indexPath)
+        }
     }
 }
 
 //MARK: - AutoLayout
-extension CollectionCell {
+extension TrackerCell {
     private func initialize() {
         setupViews()
         setConstraints()

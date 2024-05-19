@@ -20,7 +20,7 @@ final class ScheduleCell: UITableViewCell {
     //MARK: - Public Properties
     var dayOfWeek: DayOfWeek? {
         didSet {
-            titleLabel.text = dayOfWeek?.rawValue
+            titleLabel.text = dayOfWeek?.russianName
         }
     }
     
