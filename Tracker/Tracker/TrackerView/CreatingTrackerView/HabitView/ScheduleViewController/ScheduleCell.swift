@@ -31,7 +31,6 @@ final class ScheduleCell: UITableViewCell {
         let label = UILabel()
         label.textColor = .black
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -39,7 +38,6 @@ final class ScheduleCell: UITableViewCell {
         let switchControl = UISwitch()
         switchControl.onTintColor = .ypBlue
         switchControl.addTarget(self, action: #selector(switchDidChanged), for: .valueChanged)
-        switchControl.translatesAutoresizingMaskIntoConstraints = false
         return switchControl
     }()
     
@@ -69,8 +67,11 @@ extension ScheduleCell {
     
     private func setupViews() {
         backgroundColor = .ypLightGray
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(switchControl)
+        [titleLabel,
+         switchControl].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview($0)
+        }
     }
     
     private func setConstraints() {

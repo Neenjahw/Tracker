@@ -2,7 +2,7 @@
 import UIKit
 
 //MARK: - HabitViewController
-final class HabitViewController: UIViewController {
+final class HabitOrEventViewController: UIViewController {
     
     //MARK: - UIConstants
     private enum UIConstants {
@@ -14,23 +14,22 @@ final class HabitViewController: UIViewController {
         static let textFieldCornerRadius: CGFloat = 16
         static let characterLimitLabelFontSize: CGFloat = 17
         static let tableViewCornerRadius: CGFloat = 16
-        static let habitCategoryCellCornerRadius: CGFloat = 16
-        static let habitScheduleCellCornerRadius: CGFloat = 16
+        static let habitOrEventCategoryCellCornerRadius: CGFloat = 16
+        static let habitOrEventScheduleCellCornerRadius: CGFloat = 16
     }
     
     //MARK: - Public Properties
+    var isHabit: Bool = false
     var scheduleCell: ScheduleCell?
     
     //MARK: - Private Properties
     private var selectedDays: [DayOfWeek] = []
-    private var trackers: [Tracker] = []
     private var selectedCategories: [String] = []
     private let dataManager = DataManager.shared
     
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая привычка"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
         return label
@@ -71,8 +70,8 @@ final class HabitViewController: UIViewController {
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(HabitCategoryCell.self, forCellReuseIdentifier: HabitCategoryCell.habitCategoryCellIdentifier)
-        tableView.register(HabitScheduleCell.self, forCellReuseIdentifier: HabitScheduleCell.habitScheduleCellIdentifier)
+        tableView.register(HabitOrEventCategoryCell.self, forCellReuseIdentifier: HabitOrEventCategoryCell.habitCategoryCellIdentifier)
+        tableView.register(HabitOrEventScheduleCell.self, forCellReuseIdentifier: HabitOrEventScheduleCell.habitScheduleCellIdentifier)
         tableView.bounces = false
         return tableView
     }()
@@ -108,18 +107,31 @@ final class HabitViewController: UIViewController {
     
     //MARK: - Private Methods
     private func updateCreateButtonAvailability() {
-        if let text = textField.text, !text.isEmpty, !selectedCategories.isEmpty, !selectedDays.isEmpty {
-            createButton.isEnabled = true
-            createButton.backgroundColor = .ypBlack
+        let textIsValid = textField.text?.isEmpty == false
+        let categoriesAreSelected = !selectedCategories.isEmpty
+        let daysAreSelected = !selectedDays.isEmpty
+        
+        let shouldEnableButton: Bool
+        if isHabit {
+            shouldEnableButton = textIsValid && categoriesAreSelected && daysAreSelected
         } else {
-            createButton.isEnabled = false
-            createButton.backgroundColor = .ypGray
+            shouldEnableButton = textIsValid && categoriesAreSelected
         }
+        
+        createButton.isEnabled = shouldEnableButton
+        createButton.backgroundColor = shouldEnableButton ? .ypBlack : .ypGray
     }
     
-    //TODO: В следуюищих спринтах
-    //    private func makeTrackerCategory(with title: String, trackers: [Tracker]) -> TrackerRecord {
-    //    }
+    private func makeTracker() -> Tracker {
+        let name = textField.text ?? ""
+        let id = UUID()
+        let schedule = selectedDays
+        return Tracker(id: id,
+                       name: name,
+                       color: .ypBlue,
+                       emoji: "⛑️",
+                       schedule: schedule)
+    }
     
     @objc private func didTapCancelButton() {
         dismiss(animated: true)
@@ -131,20 +143,35 @@ final class HabitViewController: UIViewController {
             return
         }
         
+        let tracker = makeTracker()
+        for category in selectedCategories {
+            dataManager.add(category: TrackerCategory(title: category, trackers: [tracker]))
+        }
+        
         let tabBarController = TabBarController()
         let navigationController = UINavigationController(rootViewController: tabBarController)
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
+        navigationController.setNavigationBarHidden(true, animated: true)
     }
     
     @objc private func didTapClearTextFieldButton() {
         textField.text = ""
         characterLimitLabel.isHidden = true
     }
+    
+    private func chooseHabitOrIrregularEvent() {
+        if isHabit {
+            titleLabel.text = "Новая привычка"
+        } else {
+            titleLabel.text = "Новое нерегулярное событие"
+        }
+        tableView.reloadData()
+    }
 }
 
 //MARK: - UITextFieldDelegate
-extension HabitViewController: UITextFieldDelegate {
+extension HabitOrEventViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let text = textField.text else {
             return true
@@ -171,7 +198,7 @@ extension HabitViewController: UITextFieldDelegate {
 }
 
 //MARK: - UITableViewDelegate
-extension HabitViewController: UITableViewDelegate {
+extension HabitOrEventViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
@@ -188,17 +215,21 @@ extension HabitViewController: UITableViewDelegate {
 }
 
 //MARK: - UITableViewDataSource
-extension HabitViewController: UITableViewDataSource {
+extension HabitOrEventViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        return isHabit ? 2 : 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.row {
-        case 0:
-            return habitCategoryCell(for: indexPath, in: tableView)
-        default:
-            return habitScheduleCell(for: indexPath, in: tableView)
+        if isHabit {
+            switch indexPath.row {
+            case 0:
+                return habitOrEventCategoryCell(for: indexPath, in: tableView, isLastCell: false)
+            default:
+                return habitOrEventScheduleCell(for: indexPath, in: tableView, isLastCell: true)
+            }
+        } else {
+            return habitOrEventCategoryCell(for: indexPath, in: tableView, isLastCell: true)
         }
     }
     
@@ -206,26 +237,26 @@ extension HabitViewController: UITableViewDataSource {
         75
     }
     
-    private func habitCategoryCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitCategoryCell.habitCategoryCellIdentifier, for: indexPath) as? HabitCategoryCell else {
+    private func habitOrEventCategoryCell(for indexPath: IndexPath, in tableView: UITableView, isLastCell: Bool) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitOrEventCategoryCell.habitCategoryCellIdentifier, for: indexPath) as? HabitOrEventCategoryCell else {
             return UITableViewCell()
         }
-        cell.layer.cornerRadius = UIConstants.habitCategoryCellCornerRadius
-        cell.layer.masksToBounds = true
-        cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        
+        configureSeparator(for: cell, isLastCell: isLastCell)
+        configureCornerRadius(for: cell, indexPath: indexPath)
+        
         let selectedCategoriesString = selectedCategories.joined(separator: ", ")
         cell.changeCategoriesLabel(categories: selectedCategoriesString)
         return cell
     }
-
-    private func habitScheduleCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitScheduleCell.habitScheduleCellIdentifier, for: indexPath) as? HabitScheduleCell else {
+    
+    private func habitOrEventScheduleCell(for indexPath: IndexPath, in tableView: UITableView, isLastCell: Bool) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitOrEventScheduleCell.habitScheduleCellIdentifier, for: indexPath) as? HabitOrEventScheduleCell else {
             return UITableViewCell()
         }
-        cell.layer.cornerRadius = UIConstants.habitScheduleCellCornerRadius
-        cell.layer.masksToBounds = true
-        cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        configureSeparator(for: cell, isLastCell: isLastCell)
+        configureCornerRadius(for: cell, indexPath: indexPath)
+        
         let selectedDaysString = selectedDays.map { day in
             switch day {
             case .monday:
@@ -245,13 +276,43 @@ extension HabitViewController: UITableViewDataSource {
             }
         }.joined(separator: ", ")
         cell.changeDaysLabel(days: selectedDaysString)
-        cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 16)
         return cell
+    }
+    
+    private func configureSeparator(for cell: UITableViewCell, isLastCell: Bool) {
+        if isLastCell {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 16)
+        } else {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        }
+    }
+    
+    private func configureCornerRadius(for cell: UITableViewCell, indexPath: IndexPath) {
+        let cornerRadius = UIConstants.habitOrEventCategoryCellCornerRadius
+        
+        if isHabit {
+            switch indexPath.row {
+            case 0:
+                cell.layer.cornerRadius = cornerRadius
+                cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            case 1:
+                cell.layer.cornerRadius = cornerRadius
+                cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            default:
+                cell.layer.cornerRadius = 0
+                cell.layer.maskedCorners = []
+            }
+        } else {
+            cell.layer.cornerRadius = cornerRadius
+            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        }
+        
+        cell.layer.masksToBounds = true
     }
 }
 
 //MARK: - CategoryViewControllerDelegate
-extension HabitViewController: CategoryViewControllerDelegate {
+extension HabitOrEventViewController: CategoryViewControllerDelegate {
     func didSelect(categories: [String]) {
         for category in categories {
             selectedCategories.append(category)
@@ -262,7 +323,7 @@ extension HabitViewController: CategoryViewControllerDelegate {
 }
 
 //MARK: - ScheduleViewControllerDelegate
-extension HabitViewController: ScheduleViewControllerDelegate {
+extension HabitOrEventViewController: ScheduleViewControllerDelegate {
     func didSelect(days: [DayOfWeek]) {
         selectedDays = days
         tableView.reloadData()
@@ -271,7 +332,7 @@ extension HabitViewController: ScheduleViewControllerDelegate {
 }
 
 //MARK: - AutoLayout
-extension HabitViewController {
+extension HabitOrEventViewController {
     private func initialize() {
         setupViews()
         setConstraints()

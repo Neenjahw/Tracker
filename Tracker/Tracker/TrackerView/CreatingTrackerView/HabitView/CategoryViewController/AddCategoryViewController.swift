@@ -1,7 +1,7 @@
 
 import UIKit
 
-//MARK: -
+//MARK: - AddCategoryViewControllerDelegate
 protocol AddCategoryViewControllerDelegate: AnyObject {
     func addCategory(nameOfCategory: String)
 }
@@ -27,7 +27,6 @@ final class AddCategoryViewController: UIViewController {
         label.text = "Новая категория"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -41,7 +40,6 @@ final class AddCategoryViewController: UIViewController {
         textField.leftViewMode = .always
         
         textField.layer.cornerRadius = UIConstants.textFieldCornerRadius
-        textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
     
@@ -52,7 +50,6 @@ final class AddCategoryViewController: UIViewController {
         button.backgroundColor = .ypGray
         button.isEnabled = false
         button.layer.cornerRadius = UIConstants.createButtonCornerRadius
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         return button
     }()
@@ -107,9 +104,12 @@ extension AddCategoryViewController {
     
     private func setupViews() {
         view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(textField)
-        view.addSubview(createButton)
+        [titleLabel,
+         textField,
+         createButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func setConstraints() {

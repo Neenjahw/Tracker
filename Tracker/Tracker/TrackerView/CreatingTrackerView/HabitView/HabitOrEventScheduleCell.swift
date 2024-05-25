@@ -2,7 +2,7 @@
 import UIKit
 
 //MARK: - ScheduleCell
-final class HabitScheduleCell: UITableViewCell {
+final class HabitOrEventScheduleCell: UITableViewCell {
     
     //MARK: - UIConstants
     private enum UIConstants {
@@ -66,7 +66,7 @@ final class HabitScheduleCell: UITableViewCell {
 }
 
 //MARK: - AutoLayout
-extension HabitScheduleCell {
+extension HabitOrEventScheduleCell {
     private func initialize() {
         accessoryType = .disclosureIndicator
         selectionStyle = .none

@@ -19,7 +19,6 @@ final class CreatingTrackerViewController: UIViewController {
         label.text = "Создание трекера"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -29,7 +28,6 @@ final class CreatingTrackerViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: UIConstants.createHabitButtonTitleLabelFontSize, weight: .regular)
         button.setTitle("Привычка", for: .normal)
         button.layer.cornerRadius = UIConstants.createHabitButtonCornerRadius
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapCreateHabitButton), for: .touchUpInside)
         return button
     }()
@@ -40,7 +38,7 @@ final class CreatingTrackerViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: UIConstants.createIrregularEventButtonTitleLabelFontSize, weight: .regular)
         button.setTitle("Нерегулярное событие", for: .normal)
         button.layer.cornerRadius = UIConstants.createIrregularEventButtonCornerRadius
-        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(didTapCreateIrregularEventButton), for: .touchUpInside)
         return button
     }()
     
@@ -52,7 +50,14 @@ final class CreatingTrackerViewController: UIViewController {
     
     //MARK: - Private Methods
     @objc private func didTapCreateHabitButton() {
-        let habitViewController = HabitViewController()
+        let habitViewController = HabitOrEventViewController()
+        habitViewController.isHabit = true
+        present(habitViewController, animated: true)
+    }
+    
+    @objc private func didTapCreateIrregularEventButton() {
+        let habitViewController = HabitOrEventViewController()
+        habitViewController.isHabit = false
         present(habitViewController, animated: true)
     }
 }
@@ -66,9 +71,12 @@ extension CreatingTrackerViewController {
     
     private func setupViews() {
         view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(createHabitButton)
-        view.addSubview(createIrregularEventButton)
+        [titleLabel,
+         createHabitButton,
+         createIrregularEventButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func setConstraints() {

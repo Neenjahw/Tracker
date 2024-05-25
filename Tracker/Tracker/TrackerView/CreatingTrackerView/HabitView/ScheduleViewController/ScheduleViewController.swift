@@ -29,7 +29,6 @@ final class ScheduleViewController: UIViewController {
         label.text = "Расписание"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -40,7 +39,6 @@ final class ScheduleViewController: UIViewController {
         tableView.layer.masksToBounds = true
         tableView.showsVerticalScrollIndicator = false
         tableView.layer.cornerRadius = UIConstants.tableViewCornerRadius
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
@@ -51,7 +49,6 @@ final class ScheduleViewController: UIViewController {
         button.setTitle("Готово", for: .normal)
         button.layer.cornerRadius = UIConstants.doneButtonCornerRadius
         button.addTarget(self, action: #selector(backToHabitViewController), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -77,39 +74,51 @@ extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.row {
         case 0:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.scheduleCellIdentifier, for: indexPath) as? ScheduleCell else {
-                return UITableViewCell()
-            }
-            cell.layer.cornerRadius = UIConstants.firstCellCornerRadius
-            cell.layer.masksToBounds = true
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-            cell.delegate = self
-            let dayOfWeek = DayOfWeek.allCases[indexPath.row]
-            cell.dayOfWeek = dayOfWeek
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-            return cell
+            return configureFirstCell(for: indexPath, in: tableView)
         case 6:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.scheduleCellIdentifier, for: indexPath) as? ScheduleCell else {
-                return UITableViewCell()
-            }
-            cell.layer.cornerRadius = UIConstants.lastCellCornerRadius
-            cell.layer.masksToBounds = true
-            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            cell.delegate = self
-            let dayOfWeek = DayOfWeek.allCases[indexPath.row]
-            cell.dayOfWeek = dayOfWeek
-            cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 16)
-            return cell
+            return configureLastCell(for: indexPath, in: tableView)
         default:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.scheduleCellIdentifier, for: indexPath) as? ScheduleCell else {
-                return UITableViewCell()
-            }
-            cell.delegate = self
-            let dayOfWeek = DayOfWeek.allCases[indexPath.row]
-            cell.dayOfWeek = dayOfWeek
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-            return cell
+            return configureDefaultCell(for: indexPath, in: tableView)
         }
+    }
+    
+    private func configureFirstCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.scheduleCellIdentifier, for: indexPath) as? ScheduleCell else {
+            return UITableViewCell()
+        }
+        cell.layer.cornerRadius = UIConstants.firstCellCornerRadius
+        cell.layer.masksToBounds = true
+        cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        cell.delegate = self
+        let dayOfWeek = DayOfWeek.allCases[indexPath.row]
+        cell.dayOfWeek = dayOfWeek
+        cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        return cell
+    }
+    
+    private func configureLastCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.scheduleCellIdentifier, for: indexPath) as? ScheduleCell else {
+            return UITableViewCell()
+        }
+        cell.layer.cornerRadius = UIConstants.lastCellCornerRadius
+        cell.layer.masksToBounds = true
+        cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        cell.delegate = self
+        let dayOfWeek = DayOfWeek.allCases[indexPath.row]
+        cell.dayOfWeek = dayOfWeek
+        cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 16)
+        return cell
+    }
+    
+    private func configureDefaultCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.scheduleCellIdentifier, for: indexPath) as? ScheduleCell else {
+            return UITableViewCell()
+        }
+        cell.delegate = self
+        let dayOfWeek = DayOfWeek.allCases[indexPath.row]
+        cell.dayOfWeek = dayOfWeek
+        cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        return cell
     }
 }
 
@@ -145,9 +154,12 @@ extension ScheduleViewController {
     
     private func setupViews() {
         view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(tableView)
-        view.addSubview(doneButton)
+        [titleLabel,
+         tableView,
+         doneButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func setConstraints() {

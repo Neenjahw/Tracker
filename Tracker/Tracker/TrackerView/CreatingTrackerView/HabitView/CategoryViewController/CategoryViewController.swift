@@ -16,6 +16,7 @@ final class CategoryViewController: UIViewController {
         static let addCategoryButtonFontSize: CGFloat = 16
         static let addCategoryButtonCornerRadius: CGFloat = 16
         static let textFieldCornerRadius: CGFloat = 16
+        static let categoryCellCornerRadius: CGFloat = 16
     }
     
     //MARK: - Public Properties
@@ -36,7 +37,6 @@ final class CategoryViewController: UIViewController {
         label.text = "Новая категория"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -45,15 +45,14 @@ final class CategoryViewController: UIViewController {
         tableView.register(CategoryCell.self, forCellReuseIdentifier: CategoryCell.categoryCellIdentifier)
         tableView.bounces = false
         tableView.layer.masksToBounds = true
+        tableView.showsVerticalScrollIndicator = false
         tableView.layer.cornerRadius = UIConstants.tableViewCornerRadius
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
     private lazy var placeholderImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = .placeholderTrackerView
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -63,7 +62,6 @@ final class CategoryViewController: UIViewController {
         label.numberOfLines = 2
         label.textAlignment = .center
         label.text = "Привычки и события можно \n объединить по смыслу"
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -73,7 +71,6 @@ final class CategoryViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: UIConstants.addCategoryButtonFontSize)
         button.backgroundColor = .ypBlack
         button.layer.cornerRadius = UIConstants.addCategoryButtonCornerRadius
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapAddCategoryButton), for: .touchUpInside)
         return button
     }()
@@ -91,13 +88,8 @@ final class CategoryViewController: UIViewController {
     
     //MARK: - Private Methods
     private func setPlaceholderImage() {
-        if categories.count == 0 {
-            placeholderImageView.isHidden = false
-            placeholderLabel.isHidden = false
-        } else {
-            placeholderImageView.isHidden = true
-            placeholderLabel.isHidden = true
-        }
+        placeholderImageView.isHidden = !categories.isEmpty
+        placeholderLabel.isHidden = !categories.isEmpty
     }
     
     @objc private func didTapAddCategoryButton() {
@@ -129,8 +121,16 @@ extension CategoryViewController: UITableViewDataSource {
 
 //MARK: - UITableViewDelegate
 extension CategoryViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        configureCellCornerRadius(cell, at: indexPath)
+        configureCellSeparatorInset(cell, at: indexPath)
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.cellForRow(at: indexPath) as! CategoryCell
+        guard let cell = tableView.cellForRow(at: indexPath) as? CategoryCell else {
+            return
+        }
+        
         let category = categories[indexPath.row]
         if let index = selectedCategories.firstIndex(of: category) {
             selectedCategories.remove(at: index)
@@ -140,6 +140,37 @@ extension CategoryViewController: UITableViewDelegate {
             cell.setCheckMark()
         }
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    private func configureCellCornerRadius(_ cell: UITableViewCell, at indexPath: IndexPath) {
+        switch indexPath.row {
+        case 0:
+            if categories.count == 1 {
+                cell.layer.cornerRadius = UIConstants.categoryCellCornerRadius
+                cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            } else {
+                cell.layer.cornerRadius = UIConstants.categoryCellCornerRadius
+                cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            }
+        case categories.count - 1:
+            cell.layer.cornerRadius = UIConstants.categoryCellCornerRadius
+            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        default:
+            cell.layer.cornerRadius = 0
+            cell.layer.maskedCorners = []
+            cell.layer.masksToBounds = true
+        }
+        cell.layer.masksToBounds = true
+    }
+    
+    private func configureCellSeparatorInset(_ cell: UITableViewCell, at indexPath: IndexPath) {
+        if categories.count == 1 {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: cell.bounds.width)
+        } else if indexPath.row == categories.count - 1 {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: cell.bounds.width)
+        } else {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        }
     }
 }
 
@@ -156,17 +187,20 @@ extension CategoryViewController {
         setupViews()
         setConstraints()
         setPlaceholderImage()
+        tableView.delegate = self
+        tableView.dataSource = self
     }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(tableView)
-        view.addSubview(placeholderImageView)
-        view.addSubview(placeholderLabel)
-        view.addSubview(addCategoryButton)
-        tableView.delegate = self
-        tableView.dataSource = self
+        [titleLabel,
+         tableView,
+         placeholderImageView,
+         placeholderLabel,
+         addCategoryButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func setConstraints() {

@@ -11,13 +11,19 @@ final class TabBarController: UITabBarController {
         view.backgroundColor = .white
         tabBar.isTranslucent = false
         
-        let trackerViewController = TrackerViewController()
+        let trackerViewController = UINavigationController(rootViewController: TrackerViewController())
         let statisticsViewController = StatisticsViewController()
-        let navigationController = UINavigationController(rootViewController: trackerViewController)
         
-        trackerViewController.tabBarItem = UITabBarItem(title: "Трекеры", image: .trackerTabBarLogo, selectedImage: .trackerTabBarLogoSelected)
-        statisticsViewController.tabBarItem = UITabBarItem(title: "Статистика", image: .statisticsTabBarLogo, selectedImage: .statisticsTabBarLogoSelected)
-        self.viewControllers = [navigationController, statisticsViewController]
+        trackerViewController.tabBarItem = UITabBarItem(
+            title: "Трекеры",
+            image: .trackerTabBarLogo,
+            selectedImage: .trackerTabBarLogoSelected)
+        statisticsViewController.tabBarItem = UITabBarItem(
+            title: "Статистика",
+            image: .statisticsTabBarLogo,
+            selectedImage: .statisticsTabBarLogoSelected)
+        
+        self.viewControllers = [trackerViewController, statisticsViewController]
         self.addTopBorder(color: UIColor.gray, thickness: 0.5)
     }
 }

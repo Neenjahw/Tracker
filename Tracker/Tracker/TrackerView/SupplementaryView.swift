@@ -8,6 +8,7 @@ final class SupplementaryView: UICollectionReusableView {
     private enum UIConstants {
         static let titleLabelFontSize: CGFloat = 19
     }
+    
     //MARK: - UIModel
     let titleLabel: UILabel = {
         let label = UILabel()

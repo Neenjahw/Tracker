@@ -17,13 +17,11 @@ final class CategoryCell: UITableViewCell {
         let label = UILabel()
         label.textColor = .black
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private lazy var checkmarkImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -57,8 +55,11 @@ extension CategoryCell {
     
     private func setupViews() {
         backgroundColor = .ypLightGray
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(checkmarkImageView)
+        [titleLabel,
+         checkmarkImageView].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview($0)
+        }
     }
     
     private func setConstraints() {

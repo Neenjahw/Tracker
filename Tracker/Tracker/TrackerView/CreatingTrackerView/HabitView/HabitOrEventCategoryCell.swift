@@ -2,7 +2,7 @@
 import UIKit
 
 //MARK: - CategoryCell
-final class HabitCategoryCell: UITableViewCell {
+final class HabitOrEventCategoryCell: UITableViewCell {
     
     //MARK: - UIConstants
     private enum UIConstants {
@@ -61,7 +61,7 @@ final class HabitCategoryCell: UITableViewCell {
 }
 
 //MARK: - AutoLayout
-extension HabitCategoryCell {
+extension HabitOrEventCategoryCell {
     private func initialize() {
         accessoryType = .disclosureIndicator
         selectionStyle = .none

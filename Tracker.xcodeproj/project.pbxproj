@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D105ECA82BFA36F200A3AF05 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D105ECA72BFA36F200A3AF05 /* DataManager.swift */; };
+		D10AA8042BFCFE45002686BF /* DayOfWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10AA8032BFCFE45002686BF /* DayOfWeek.swift */; };
 		D12AF3E72BE386D600DEA6CD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12AF3E62BE386D600DEA6CD /* AppDelegate.swift */; };
 		D12AF3E92BE386D600DEA6CD /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12AF3E82BE386D600DEA6CD /* SceneDelegate.swift */; };
 		D12AF3EB2BE386D600DEA6CD /* TrackerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12AF3EA2BE386D600DEA6CD /* TrackerViewController.swift */; };
@@ -27,16 +28,16 @@
 		D1C2236F2BE93591003FF4EE /* TrackerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2236E2BE93591003FF4EE /* TrackerCell.swift */; };
 		D1C223712BE966EF003FF4EE /* SupplementaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223702BE966EF003FF4EE /* SupplementaryView.swift */; };
 		D1C223732BE97210003FF4EE /* CreatingTrackerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223722BE97210003FF4EE /* CreatingTrackerViewController.swift */; };
-		D1C223782BED46F4003FF4EE /* IrregularViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223772BED46F4003FF4EE /* IrregularViewController.swift */; };
-		D1C2237B2BED48F9003FF4EE /* HabitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2237A2BED48F9003FF4EE /* HabitViewController.swift */; };
-		D1C2237D2BED72D0003FF4EE /* HabitCategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2237C2BED72CF003FF4EE /* HabitCategoryCell.swift */; };
-		D1C2237F2BED8042003FF4EE /* HabitScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2237E2BED8042003FF4EE /* HabitScheduleCell.swift */; };
+		D1C2237B2BED48F9003FF4EE /* HabitOrEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2237A2BED48F9003FF4EE /* HabitOrEventViewController.swift */; };
+		D1C2237D2BED72D0003FF4EE /* HabitOrEventCategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2237C2BED72CF003FF4EE /* HabitOrEventCategoryCell.swift */; };
+		D1C2237F2BED8042003FF4EE /* HabitOrEventScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C2237E2BED8042003FF4EE /* HabitOrEventScheduleCell.swift */; };
 		D1C223822BED87BC003FF4EE /* ScheduleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223812BED87BC003FF4EE /* ScheduleViewController.swift */; };
 		D1C223842BED8A55003FF4EE /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223832BED8A55003FF4EE /* ScheduleCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D105ECA72BFA36F200A3AF05 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		D10AA8032BFCFE45002686BF /* DayOfWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayOfWeek.swift; sourceTree = "<group>"; };
 		D12AF3E32BE386D600DEA6CD /* Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12AF3E62BE386D600DEA6CD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D12AF3E82BE386D600DEA6CD /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -58,10 +59,9 @@
 		D1C2236E2BE93591003FF4EE /* TrackerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCell.swift; sourceTree = "<group>"; };
 		D1C223702BE966EF003FF4EE /* SupplementaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupplementaryView.swift; sourceTree = "<group>"; };
 		D1C223722BE97210003FF4EE /* CreatingTrackerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatingTrackerViewController.swift; sourceTree = "<group>"; };
-		D1C223772BED46F4003FF4EE /* IrregularViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IrregularViewController.swift; sourceTree = "<group>"; };
-		D1C2237A2BED48F9003FF4EE /* HabitViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitViewController.swift; sourceTree = "<group>"; };
-		D1C2237C2BED72CF003FF4EE /* HabitCategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitCategoryCell.swift; sourceTree = "<group>"; };
-		D1C2237E2BED8042003FF4EE /* HabitScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitScheduleCell.swift; sourceTree = "<group>"; };
+		D1C2237A2BED48F9003FF4EE /* HabitOrEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitOrEventViewController.swift; sourceTree = "<group>"; };
+		D1C2237C2BED72CF003FF4EE /* HabitOrEventCategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitOrEventCategoryCell.swift; sourceTree = "<group>"; };
+		D1C2237E2BED8042003FF4EE /* HabitOrEventScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitOrEventScheduleCell.swift; sourceTree = "<group>"; };
 		D1C223812BED87BC003FF4EE /* ScheduleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewController.swift; sourceTree = "<group>"; };
 		D1C223832BED8A55003FF4EE /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -177,6 +177,7 @@
 				D1C223662BE7F930003FF4EE /* Tracker.swift */,
 				D1C223682BE7FDA3003FF4EE /* TrackerRecord.swift */,
 				D1C2236A2BE7FEE8003FF4EE /* TrackerCategory.swift */,
+				D10AA8032BFCFE45002686BF /* DayOfWeek.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -197,17 +198,8 @@
 			children = (
 				D1C223722BE97210003FF4EE /* CreatingTrackerViewController.swift */,
 				D1C223792BED48A0003FF4EE /* HabitView */,
-				D1C223762BED46BA003FF4EE /* IrregularEventView */,
 			);
 			path = CreatingTrackerView;
-			sourceTree = "<group>";
-		};
-		D1C223762BED46BA003FF4EE /* IrregularEventView */ = {
-			isa = PBXGroup;
-			children = (
-				D1C223772BED46F4003FF4EE /* IrregularViewController.swift */,
-			);
-			path = IrregularEventView;
 			sourceTree = "<group>";
 		};
 		D1C223792BED48A0003FF4EE /* HabitView */ = {
@@ -215,9 +207,9 @@
 			children = (
 				D142BD572BF8C5A800414AAA /* CategoryViewController */,
 				D1C223802BED879F003FF4EE /* ScheduleViewController */,
-				D1C2237A2BED48F9003FF4EE /* HabitViewController.swift */,
-				D1C2237C2BED72CF003FF4EE /* HabitCategoryCell.swift */,
-				D1C2237E2BED8042003FF4EE /* HabitScheduleCell.swift */,
+				D1C2237A2BED48F9003FF4EE /* HabitOrEventViewController.swift */,
+				D1C2237C2BED72CF003FF4EE /* HabitOrEventCategoryCell.swift */,
+				D1C2237E2BED8042003FF4EE /* HabitOrEventScheduleCell.swift */,
 			);
 			path = HabitView;
 			sourceTree = "<group>";
@@ -303,25 +295,25 @@
 			files = (
 				D142BD5D2BF8CD2F00414AAA /* CategoryCell.swift in Sources */,
 				D105ECA82BFA36F200A3AF05 /* DataManager.swift in Sources */,
-				D1C2237D2BED72D0003FF4EE /* HabitCategoryCell.swift in Sources */,
+				D1C2237D2BED72D0003FF4EE /* HabitOrEventCategoryCell.swift in Sources */,
 				D12AF3F12BE386D600DEA6CD /* Tracker.xcdatamodeld in Sources */,
 				D12AF3EB2BE386D600DEA6CD /* TrackerViewController.swift in Sources */,
 				D1C2236F2BE93591003FF4EE /* TrackerCell.swift in Sources */,
-				D1C2237F2BED8042003FF4EE /* HabitScheduleCell.swift in Sources */,
+				D1C2237F2BED8042003FF4EE /* HabitOrEventScheduleCell.swift in Sources */,
 				D1C223842BED8A55003FF4EE /* ScheduleCell.swift in Sources */,
 				D12AF3E72BE386D600DEA6CD /* AppDelegate.swift in Sources */,
 				D1C223732BE97210003FF4EE /* CreatingTrackerViewController.swift in Sources */,
 				D1C223672BE7F930003FF4EE /* Tracker.swift in Sources */,
 				D1C223622BE7B447003FF4EE /* OnboardingViewController.swift in Sources */,
-				D1C223782BED46F4003FF4EE /* IrregularViewController.swift in Sources */,
 				D1C223692BE7FDA3003FF4EE /* TrackerRecord.swift in Sources */,
 				D1C223822BED87BC003FF4EE /* ScheduleViewController.swift in Sources */,
 				D1C223712BE966EF003FF4EE /* SupplementaryView.swift in Sources */,
 				D12AF4022BE3974800DEA6CD /* StatisticsViewController.swift in Sources */,
-				D1C2237B2BED48F9003FF4EE /* HabitViewController.swift in Sources */,
+				D1C2237B2BED48F9003FF4EE /* HabitOrEventViewController.swift in Sources */,
 				D142BD592BF8C5C400414AAA /* AddCategoryViewController.swift in Sources */,
 				D1C223642BE7B72E003FF4EE /* OnboardingView.swift in Sources */,
 				D12AF3FF2BE38EB200DEA6CD /* TabBarController.swift in Sources */,
+				D10AA8042BFCFE45002686BF /* DayOfWeek.swift in Sources */,
 				D12AF3E92BE386D600DEA6CD /* SceneDelegate.swift in Sources */,
 				D142BD5B2BF8CA2E00414AAA /* CategoryViewController.swift in Sources */,
 				D1C2236B2BE7FEE8003FF4EE /* TrackerCategory.swift in Sources */,

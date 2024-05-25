@@ -12,7 +12,6 @@ final class OnboardingView: UIView {
     //MARK: - UIModels
     private lazy var pageImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -22,7 +21,6 @@ final class OnboardingView: UIView {
         label.font = .boldSystemFont(ofSize: UIConstants.pageLabelFontSize)
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -32,7 +30,6 @@ final class OnboardingView: UIView {
         button.backgroundColor = .black
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector (didTapButton), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -72,6 +69,8 @@ final class OnboardingView: UIView {
             return
         }
         
+        let userDefaults = UserDefaults.standard
+        userDefaults.set(true, forKey: "onboardingShow")
         let tabBarController = TabBarController()
         let navigationController = UINavigationController(rootViewController: tabBarController)
         window.rootViewController = navigationController
@@ -83,9 +82,12 @@ final class OnboardingView: UIView {
 extension OnboardingView {
     
     private func setupViews() {
-        addSubview(pageImageView)
-        addSubview(pageLabel)
-        addSubview(pageButton)
+        [pageImageView,
+         pageLabel,
+         pageButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            addSubview($0)
+        }
     }
     
     private func setConstraints() {

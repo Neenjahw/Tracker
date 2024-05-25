@@ -34,7 +34,6 @@ final class TrackerCell: UICollectionViewCell {
     private lazy var trackerCardView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = UIConstants.trackerCardViewCornerRadius
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -45,7 +44,6 @@ final class TrackerCell: UICollectionViewCell {
         label.layer.masksToBounds = true
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.emojiLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -54,7 +52,6 @@ final class TrackerCell: UICollectionViewCell {
         label.textColor = .white
         label.font = .systemFont(ofSize: UIConstants.trackerCardLabelFontSize)
         label.numberOfLines = 2
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -62,7 +59,6 @@ final class TrackerCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.daysCountLabelFontSize)
         label.text = "1 день"
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -72,7 +68,6 @@ final class TrackerCell: UICollectionViewCell {
         button.contentMode = .scaleAspectFill
         button.layer.cornerRadius = UIConstants.trackerDoneButtonCornerRadius
         button.addTarget(self, action: #selector(didTapTrackerDoneButton), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -87,26 +82,59 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     //MARK: - Public Methods
-    func configure(with tracker: Tracker, isCompletedToday: Bool, at indexPath: IndexPath) {
+    func configure(with tracker: Tracker, isCompletedToday: Bool, completedDays: Int, at indexPath: IndexPath) {
         trackerCardLabel.text = tracker.name
         trackerCardView.backgroundColor = tracker.color
         trackerCardEmojiLabel.text = tracker.emoji
-        updateDoneButton()
+        daysCountLabel.text = pluralizeDays(completedDays)
         self.isCompletedToday = isCompletedToday
         self.trackerId = tracker.id
         self.indexPath = indexPath
-    }
-    
-    //MARK: - Private Methods
-    private func updateDoneButton() {
-        guard let trackerColor = trackerCardView.backgroundColor else { return }
-        let image = isCompletedToday ? UIImage(resource: .trackerDone) : UIImage(resource: .trackerPlus)
-        trackerDoneButton.setImage(image.withTintColor(trackerColor), for: .normal)
+        updateDoneButton()
     }
     
     func setCompletedState(_ completed: Bool) {
         isCompletedToday = completed
         updateDoneButton()
+    }
+    
+    //MARK: - Private Methods
+    private func updateDoneButton() {
+        guard let trackerColor = trackerCardView.backgroundColor else { return }
+        let baseImage = isCompletedToday ? UIImage(resource: .trackerDone).withTintColor(trackerColor) : UIImage(resource: .trackerPlus)
+        
+        if isCompletedToday {
+            let overlayImage = UIImage(resource: .trackerCheckmark).withTintColor(.white).withRenderingMode(.alwaysTemplate)
+            if let combined = combinedImage(baseImage: baseImage, overlayImage: overlayImage, overlayScale: 1.2) {
+                trackerDoneButton.setImage(combined, for: .normal)
+            }
+        } else {
+            trackerDoneButton.setImage(baseImage.withTintColor(trackerColor), for: .normal)
+        }
+    }
+    
+    private func combinedImage(baseImage: UIImage, overlayImage: UIImage, overlayScale: CGFloat) -> UIImage? {
+        let size = baseImage.size
+        let overlaySize = CGSize(width: overlayImage.size.width * overlayScale, height: overlayImage.size.height * overlayScale)
+        let overlayOrigin = CGPoint(x: (size.width - overlaySize.width) / 2, y: (size.height - overlaySize.height) / 2)
+        
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { context in
+            baseImage.draw(in: CGRect(origin: .zero, size: size))
+            overlayImage.draw(in: CGRect(origin: overlayOrigin, size: overlaySize))
+        }
+    }
+    
+    private func pluralizeDays(_ count: Int) -> String {
+        let remainder10 = count % 10
+        let remainder100 = count % 100
+        if remainder10 == 1 && remainder100 != 11 {
+            return "\(count) день"
+        } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 2) {
+            return "\(count) дня"
+        } else {
+            return "\(count) дней"
+        }
     }
     
     @objc private func didTapTrackerDoneButton() {
@@ -130,11 +158,17 @@ extension TrackerCell {
     }
     
     private func setupViews() {
-        contentView.addSubview(trackerCardView)
-        trackerCardView.addSubview(trackerCardEmojiLabel)
-        trackerCardView.addSubview(trackerCardLabel)
-        contentView.addSubview(daysCountLabel)
-        contentView.addSubview(trackerDoneButton)
+        [trackerCardView,
+         daysCountLabel,
+         trackerDoneButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview($0)
+        }
+        [trackerCardEmojiLabel,
+         trackerCardLabel].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            trackerCardView.addSubview($0)
+        }
     }
     
     private func setConstraints() {

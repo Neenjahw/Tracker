@@ -10,7 +10,6 @@ final class OnboardingViewController: UIViewController {
         scrollView.isPagingEnabled = true
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.bounces = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
     
@@ -19,7 +18,6 @@ final class OnboardingViewController: UIViewController {
         pageControl.numberOfPages = 2
         pageControl.pageIndicatorTintColor = .gray
         pageControl.currentPageIndicatorTintColor = .black
-        pageControl.translatesAutoresizingMaskIntoConstraints = false
         return pageControl
     }()
     
@@ -91,8 +89,11 @@ extension OnboardingViewController {
     
     private func setupViews() {
         view.backgroundColor = .systemBackground
-        view.addSubview(scrollView)
-        view.addSubview(pageControl)
+        [scrollView,
+         pageControl].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func setDelegates() {
