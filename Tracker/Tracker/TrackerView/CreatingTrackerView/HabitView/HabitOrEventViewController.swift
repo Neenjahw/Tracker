@@ -33,7 +33,6 @@ final class HabitViewController: UIViewController {
         label.text = "Новая привычка"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -57,7 +56,6 @@ final class HabitViewController: UIViewController {
         textField.rightViewMode = .whileEditing
         
         textField.layer.cornerRadius = UIConstants.textFieldCornerRadius
-        textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
     
@@ -68,7 +66,6 @@ final class HabitViewController: UIViewController {
         label.font = .systemFont(ofSize: UIConstants.characterLimitLabelFontSize)
         label.textAlignment = .center
         label.isHidden = true
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -77,7 +74,6 @@ final class HabitViewController: UIViewController {
         tableView.register(HabitCategoryCell.self, forCellReuseIdentifier: HabitCategoryCell.habitCategoryCellIdentifier)
         tableView.register(HabitScheduleCell.self, forCellReuseIdentifier: HabitScheduleCell.habitScheduleCellIdentifier)
         tableView.bounces = false
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
@@ -89,7 +85,6 @@ final class HabitViewController: UIViewController {
         button.layer.borderColor = UIColor.ypRed.cgColor
         button.layer.borderWidth = 1
         button.layer.cornerRadius = UIConstants.cancelButtonCornerRadius
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
         return button
     }()
@@ -101,7 +96,6 @@ final class HabitViewController: UIViewController {
         button.backgroundColor = .ypGray
         button.isEnabled = false
         button.layer.cornerRadius = UIConstants.createButtonCornerRadius
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         return button
     }()
@@ -202,49 +196,57 @@ extension HabitViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.row {
         case 0:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitCategoryCell.habitCategoryCellIdentifier, for: indexPath) as? HabitCategoryCell else {
-                return UITableViewCell()
-            }
-            cell.layer.cornerRadius = UIConstants.habitCategoryCellCornerRadius
-            cell.layer.masksToBounds = true
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-            let selectedCategoriesString = selectedCategories.joined(separator: ", ")
-            cell.changeCategoriesLabel(categories: selectedCategoriesString)
-            return cell
+            return habitCategoryCell(for: indexPath, in: tableView)
         default:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitScheduleCell.habitScheduleCellIdentifier, for: indexPath) as? HabitScheduleCell else {
-                return UITableViewCell()
-            }
-            cell.layer.cornerRadius = UIConstants.habitScheduleCellCornerRadius
-            cell.layer.masksToBounds = true
-            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            let selectedDaysString = selectedDays.map { day in
-                switch day {
-                case .monday:
-                    return("Пн")
-                case .tuesday:
-                    return("Вт")
-                case .wednesday:
-                    return("Ср")
-                case .thursday:
-                    return("Чт")
-                case .friday:
-                    return("Пт")
-                case .saturday:
-                    return("Сб")
-                case .sunday:
-                    return("Вс")
-                }
-            }.joined(separator: ", ")
-            cell.changeDaysLabel(days: selectedDaysString)
-            cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 16)
-            return cell
+            return habitScheduleCell(for: indexPath, in: tableView)
         }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         75
+    }
+    
+    private func habitCategoryCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitCategoryCell.habitCategoryCellIdentifier, for: indexPath) as? HabitCategoryCell else {
+            return UITableViewCell()
+        }
+        cell.layer.cornerRadius = UIConstants.habitCategoryCellCornerRadius
+        cell.layer.masksToBounds = true
+        cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        let selectedCategoriesString = selectedCategories.joined(separator: ", ")
+        cell.changeCategoriesLabel(categories: selectedCategoriesString)
+        return cell
+    }
+
+    private func habitScheduleCell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: HabitScheduleCell.habitScheduleCellIdentifier, for: indexPath) as? HabitScheduleCell else {
+            return UITableViewCell()
+        }
+        cell.layer.cornerRadius = UIConstants.habitScheduleCellCornerRadius
+        cell.layer.masksToBounds = true
+        cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        let selectedDaysString = selectedDays.map { day in
+            switch day {
+            case .monday:
+                return("Пн")
+            case .tuesday:
+                return("Вт")
+            case .wednesday:
+                return("Ср")
+            case .thursday:
+                return("Чт")
+            case .friday:
+                return("Пт")
+            case .saturday:
+                return("Сб")
+            case .sunday:
+                return("Вс")
+            }
+        }.joined(separator: ", ")
+        cell.changeDaysLabel(days: selectedDaysString)
+        cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 16)
+        return cell
     }
 }
 
@@ -280,12 +282,15 @@ extension HabitViewController {
     
     private func setupViews() {
         view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(textField)
-        view.addSubview(characterLimitLabel)
-        view.addSubview(tableView)
-        view.addSubview(cancelButton)
-        view.addSubview(createButton)
+        [titleLabel,
+         textField,
+         characterLimitLabel,
+         tableView,
+         cancelButton,
+         createButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func setConstraints() {

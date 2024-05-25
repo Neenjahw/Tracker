@@ -13,13 +13,16 @@ final class HabitScheduleCell: UITableViewCell {
     static let habitScheduleCellIdentifier = "ScheduleCell"
     static let selectedDaysNotification = Notification.Name("selectedDaysNotification")
     
+    //MARK: - Private Properties
+    private var titleLabelTopConstraint: NSLayoutConstraint?
+    private var titleLabelCenterYConstraint: NSLayoutConstraint?
+    
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Расписание"
         label.textColor = .black
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -27,7 +30,6 @@ final class HabitScheduleCell: UITableViewCell {
         let label = UILabel()
         label.textColor = .ypGray
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -48,6 +50,18 @@ final class HabitScheduleCell: UITableViewCell {
         } else {
             daysLabel.text = days
         }
+        updateTitleLabelConstraints()
+    }
+    
+    private func updateTitleLabelConstraints() {
+        if let text = daysLabel.text, !text.isEmpty {
+            titleLabelCenterYConstraint?.isActive = false
+            titleLabelTopConstraint?.isActive = true
+        } else {
+            titleLabelTopConstraint?.isActive = false
+            titleLabelCenterYConstraint?.isActive = true
+        }
+        setNeedsLayout()
     }
 }
 
@@ -62,17 +76,23 @@ extension HabitScheduleCell {
     
     private func setupViews() {
         backgroundColor = .ypLightGray
-        addSubview(titleLabel)
-        addSubview(daysLabel)
+        [titleLabel,
+         daysLabel].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            addSubview($0)
+        }
     }
     
     private func setConstraints() {
+        titleLabelTopConstraint = titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 15)
+        titleLabelCenterYConstraint = titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+        
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 15),
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             
             daysLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             daysLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14)
         ])
+        updateTitleLabelConstraints()
     }
 }
