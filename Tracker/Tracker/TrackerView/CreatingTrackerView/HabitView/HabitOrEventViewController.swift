@@ -125,12 +125,31 @@ final class HabitOrEventViewController: UIViewController {
     private func makeTracker() -> Tracker {
         let name = textField.text ?? ""
         let id = UUID()
-        let schedule = selectedDays
+        let today = Date()
+        var schedule: [DayOfWeek] = []
+        
+        if isHabit {
+            schedule = selectedDays
+        } else {
+            var filterWeekDay = Calendar.current.component(.weekday, from: today)
+            if filterWeekDay == 1 {
+                filterWeekDay = 7
+            } else {
+                filterWeekDay -= 1
+            }
+            if let selectedDayOfWeek = DayOfWeek(rawValue: filterWeekDay) {
+                schedule.append(selectedDayOfWeek)
+            }
+        }
+        
+        let type: TrackerType = isHabit ? .habit : .irregularEvent
+        
         return Tracker(id: id,
                        name: name,
-                       color: .ypBlue,
-                       emoji: "⛑️",
-                       schedule: schedule)
+                       color: isHabit ? .ypBlue : .ypGray,
+                       emoji: isHabit ? "⛑️" : "🌏",
+                       schedule: schedule,
+                       type: type)
     }
     
     @objc private func didTapCancelButton() {

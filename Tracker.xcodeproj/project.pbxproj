@@ -20,6 +20,7 @@
 		D142BD592BF8C5C400414AAA /* AddCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D142BD582BF8C5C400414AAA /* AddCategoryViewController.swift */; };
 		D142BD5B2BF8CA2E00414AAA /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D142BD5A2BF8CA2E00414AAA /* CategoryViewController.swift */; };
 		D142BD5D2BF8CD2F00414AAA /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D142BD5C2BF8CD2F00414AAA /* CategoryCell.swift */; };
+		D1666F402C034654005AC2C1 /* TrackerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1666F3F2C034654005AC2C1 /* TrackerType.swift */; };
 		D1C223622BE7B447003FF4EE /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223612BE7B447003FF4EE /* OnboardingViewController.swift */; };
 		D1C223642BE7B72E003FF4EE /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223632BE7B72D003FF4EE /* OnboardingView.swift */; };
 		D1C223672BE7F930003FF4EE /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C223662BE7F930003FF4EE /* Tracker.swift */; };
@@ -51,6 +52,7 @@
 		D142BD582BF8C5C400414AAA /* AddCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategoryViewController.swift; sourceTree = "<group>"; };
 		D142BD5A2BF8CA2E00414AAA /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
 		D142BD5C2BF8CD2F00414AAA /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
+		D1666F3F2C034654005AC2C1 /* TrackerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerType.swift; sourceTree = "<group>"; };
 		D1C223612BE7B447003FF4EE /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
 		D1C223632BE7B72D003FF4EE /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		D1C223662BE7F930003FF4EE /* Tracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				D1C223682BE7FDA3003FF4EE /* TrackerRecord.swift */,
 				D1C2236A2BE7FEE8003FF4EE /* TrackerCategory.swift */,
 				D10AA8032BFCFE45002686BF /* DayOfWeek.swift */,
+				D1666F3F2C034654005AC2C1 /* TrackerType.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -310,6 +313,7 @@
 				D1C223712BE966EF003FF4EE /* SupplementaryView.swift in Sources */,
 				D12AF4022BE3974800DEA6CD /* StatisticsViewController.swift in Sources */,
 				D1C2237B2BED48F9003FF4EE /* HabitOrEventViewController.swift in Sources */,
+				D1666F402C034654005AC2C1 /* TrackerType.swift in Sources */,
 				D142BD592BF8C5C400414AAA /* AddCategoryViewController.swift in Sources */,
 				D1C223642BE7B72E003FF4EE /* OnboardingView.swift in Sources */,
 				D12AF3FF2BE38EB200DEA6CD /* TabBarController.swift in Sources */,

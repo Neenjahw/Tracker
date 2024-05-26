@@ -159,32 +159,34 @@ final class TrackerViewController: UIViewController {
     private func reloadVisibleCategories() {
         let calendar = Calendar.current
         guard let currentDate = currentDate else { return }
-        var filterWeekDay = calendar.component(.weekday, from: currentDate)
-        if filterWeekDay == 1 {
-            filterWeekDay = 7
-        } else {
-            filterWeekDay -= 1
-        }
+        let currentDay = calendar.component(.day, from: currentDate)
         let filterText = (searchTextField.text ?? "").lowercased()
         
         visibleCategories = categories.compactMap { category in
             let trackers = category.trackers.filter { tracker in
-                let textCondition = filterText.isEmpty ||
-                tracker.name.lowercased().contains(filterText)
-                let dateCondition = tracker.schedule.contains { (dayOfWeek: DayOfWeek) in
-                    (dayOfWeek.rawValue) == filterWeekDay
-                } == true
+                let textCondition = filterText.isEmpty || tracker.name.lowercased().contains(filterText)
+                var dateCondition = false
+                switch tracker.type {
+                case .habit:
+                    dateCondition = tracker.schedule.contains { dayOfWeek in
+                        let filterWeekDay = calendar.component(.weekday, from: currentDate)
+                        let weekDay = dayOfWeek.rawValue
+                        return filterWeekDay == (weekDay == 1 ? 7 : weekDay - 1)
+                    }
+                case .irregularEvent:
+                    if isCurrentDate(currentDate) {
+                        let creationDate = Date()
+                        dateCondition = calendar.isDate(creationDate, inSameDayAs: currentDate)
+                    }
+                }
+                
                 return textCondition && dateCondition
             }
-            if trackers.isEmpty {
-                return nil
-            }
-            return TrackerCategory(
-                title: category.title,
-                trackers: trackers)
+            return trackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: trackers)
         }
         collectionView.reloadData()
     }
+    
     
     private func isTrackerCompletedToday(id: UUID) -> Bool {
         completedTrackers.contains { trackerRecord in
@@ -317,9 +319,8 @@ extension TrackerViewController: UICollectionViewDataSource {
 //MARK: - TrackerCellDelegate
 extension TrackerViewController: TrackerCellDelegate {
     func completeTracker(id: UUID, at indexPath: IndexPath) {
-        guard let currentDate = currentDate, isCurrentDate(currentDate) else {
-            return
-        }
+        guard let currentDate = currentDate else { return }
+        if !isCurrentDate(currentDate) && currentDate > Date() { return }
         let trackerDate = UInt(currentDate.timeIntervalSince1970)
         let trackerRecord = TrackerRecord(id: id, date: trackerDate)
         completedTrackers.append(trackerRecord)
@@ -330,15 +331,16 @@ extension TrackerViewController: TrackerCellDelegate {
     }
     
     func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
-        guard let currentDate = currentDate, isCurrentDate(currentDate) else {
-            return
-        }
-        completedTrackers.removeAll { trackerRecord in
+        guard let currentDate = currentDate else { return }
+        if !isCurrentDate(currentDate) && currentDate > Date() { return }
+        
+        if let index = completedTrackers.firstIndex(where: { trackerRecord in
             isSameTrackerRecord(trackerRecord: trackerRecord, id: id)
+        }) {
+            completedTrackers.remove(at: index)
             if let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell {
                 cell.setCompletedState(false)
             }
-            return true
         }
         collectionView.reloadItems(at: [indexPath])
     }
