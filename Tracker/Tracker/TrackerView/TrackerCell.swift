@@ -1,13 +1,13 @@
 
 import UIKit
 
-//MARK: -
+//MARK: - TrackerCellDelegate
 protocol TrackerCellDelegate: AnyObject {
     func completeTracker(id: UUID, at indexPath: IndexPath)
     func uncompleteTracker(id: UUID, at indexPath: IndexPath)
 }
 
-//MARK: - CollectionViewCell
+//MARK: - TrackerCell
 final class TrackerCell: UICollectionViewCell {
     
     //MARK: - UIConstants

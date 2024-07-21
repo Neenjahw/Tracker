@@ -3,5 +3,5 @@ import Foundation
 
 struct TrackerRecord {
     let id: UUID
-    let date: UInt
+    let date: UInt64
 }

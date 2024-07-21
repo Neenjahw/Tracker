@@ -72,8 +72,7 @@ final class OnboardingView: UIView {
         let userDefaults = UserDefaults.standard
         userDefaults.set(true, forKey: "onboardingShow")
         let tabBarController = TabBarController()
-        let navigationController = UINavigationController(rootViewController: tabBarController)
-        window.rootViewController = navigationController
+        window.rootViewController = tabBarController
         window.makeKeyAndVisible()
     }
 }

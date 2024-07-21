@@ -2,7 +2,7 @@
 import Foundation
 
 //MARK: - DayOfWeek
-enum DayOfWeek: Int, CaseIterable {
+enum DayOfWeek: Int, CaseIterable, Codable{
     case monday = 1
     case tuesday = 2
     case wednesday = 3

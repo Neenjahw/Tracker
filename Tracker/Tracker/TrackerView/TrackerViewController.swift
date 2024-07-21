@@ -18,8 +18,28 @@ final class TrackerViewController: UIViewController {
     private var categories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
     private var currentDate: Date?
-    
-    private let dataManager = DataManager.shared
+    private lazy var trackerCategoryDataProvider: TrackerCategoryDataProviderProtocol? = {
+        let trackerCategoryDataStore = TrackerCategoryStore()
+        do {
+            try trackerCategoryDataProvider = TrackerCategoryDataProvider(trackerCategoryStore:trackerCategoryDataStore,
+                                                                          delegate: self)
+            return trackerCategoryDataProvider
+        } catch {
+            print("Данные не доступны")
+            return nil
+        }
+    }()
+    private lazy var trackerRecordDataProvider: TrackerRecordDataProviderProtocol? = {
+        let trackerRecordDataStore = TrackerRecordStore()
+        do {
+            try trackerRecordDataProvider = TrackerRecordDataProvider(trackerRecordStore:trackerRecordDataStore,
+                                                                      delegate: self)
+            return trackerRecordDataProvider
+        } catch {
+            print("Данные не доступны")
+            return nil
+        }
+    }()
     
     //MARK: - UIModels
     private lazy var addTrackerButton: UIButton = {
@@ -146,9 +166,12 @@ final class TrackerViewController: UIViewController {
     
     //MARK: - Private Methods
     private func reloadData() {
-        categories = dataManager.categories
-        visibleCategories = categories
-        reloadVisibleCategories()
+        if let trackerCategories = trackerCategoryDataProvider?.fetchCategories() {
+            categories = trackerCategories
+            visibleCategories = categories
+            reloadVisibleCategories()
+            completedTrackers = trackerRecordDataProvider?.fetch() ?? []
+        }
     }
     
     private func setPlaceholderImage() {
@@ -159,21 +182,21 @@ final class TrackerViewController: UIViewController {
     private func reloadVisibleCategories() {
         let calendar = Calendar.current
         guard let currentDate = currentDate else { return }
-        let currentDay = calendar.component(.day, from: currentDate)
         let filterText = (searchTextField.text ?? "").lowercased()
         
         visibleCategories = categories.compactMap { category in
             let trackers = category.trackers.filter { tracker in
                 let textCondition = filterText.isEmpty || tracker.name.lowercased().contains(filterText)
                 var dateCondition = false
-                switch tracker.type {
-                case .habit:
+                
+                if tracker.isHabit == true {
+                    let filterWeekDay = calendar.component(.weekday, from: currentDate)
                     dateCondition = tracker.schedule.contains { dayOfWeek in
-                        let filterWeekDay = calendar.component(.weekday, from: currentDate)
-                        let weekDay = dayOfWeek.rawValue
-                        return filterWeekDay == (weekDay == 1 ? 7 : weekDay - 1)
+                        let dayOfWeekIndex = dayOfWeek.rawValue
+                        let filterWeekDayAdjusted = filterWeekDay == 1 ? 7 : filterWeekDay - 1
+                        return dayOfWeekIndex == filterWeekDayAdjusted
                     }
-                case .irregularEvent:
+                } else {
                     if isCurrentDate(currentDate) {
                         let creationDate = Date()
                         dateCondition = calendar.isDate(creationDate, inSameDayAs: currentDate)
@@ -182,10 +205,13 @@ final class TrackerViewController: UIViewController {
                 
                 return textCondition && dateCondition
             }
+            
             return trackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: trackers)
         }
+        
         collectionView.reloadData()
     }
+    
     
     
     private func isTrackerCompletedToday(id: UUID) -> Bool {
@@ -226,8 +252,9 @@ final class TrackerViewController: UIViewController {
     
     @objc private func createTracker() {
         let creatingTrackerViewController = CreatingTrackerViewController()
-        present(creatingTrackerViewController, animated: true)
-        navigationController?.setNavigationBarHidden(false, animated: true)
+        let navigationController = UINavigationController(rootViewController: creatingTrackerViewController)
+        
+        present(navigationController, animated: true)
     }
     
     @objc private func clearTextField() {
@@ -273,8 +300,7 @@ extension TrackerViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let numberOfItems = visibleCategories[section].trackers.count
-        return numberOfItems
+        return visibleCategories[section].trackers.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -321,28 +347,83 @@ extension TrackerViewController: TrackerCellDelegate {
     func completeTracker(id: UUID, at indexPath: IndexPath) {
         guard let currentDate = currentDate else { return }
         if !isCurrentDate(currentDate) && currentDate > Date() { return }
-        let trackerDate = UInt(currentDate.timeIntervalSince1970)
+        
+        let trackerDate = startOfDay(for: currentDate)
         let trackerRecord = TrackerRecord(id: id, date: trackerDate)
-        completedTrackers.append(trackerRecord)
-        if let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell {
-            cell.setCompletedState(true)
+        
+        do {
+            try trackerRecordDataProvider?.add(trackerRecord: trackerRecord)
+            completedTrackers.append(trackerRecord)
+            if let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell {
+                cell.setCompletedState(true)
+            }
+            collectionView.reloadData()
+        } catch {
+            print("Failed to add tracker record: \(error)")
         }
-        collectionView.reloadItems(at: [indexPath])
     }
     
     func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
         guard let currentDate = currentDate else { return }
         if !isCurrentDate(currentDate) && currentDate > Date() { return }
         
-        if let index = completedTrackers.firstIndex(where: { trackerRecord in
-            isSameTrackerRecord(trackerRecord: trackerRecord, id: id)
-        }) {
-            completedTrackers.remove(at: index)
-            if let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell {
-                cell.setCompletedState(false)
+        let trackerDate = startOfDay(for: currentDate)
+        let trackerRecord = TrackerRecord(id: id, date: trackerDate)
+        
+        do {
+            try trackerRecordDataProvider?.delete(trackerRecord: trackerRecord)
+            if let index = completedTrackers.firstIndex(where: { $0.id == id && $0.date == trackerRecord.date }) {
+                completedTrackers.remove(at: index)
+                if let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell {
+                    cell.setCompletedState(false)
+                }
             }
+            collectionView.reloadData()
+        } catch {
+            print("Failed to delete tracker record: \(error)")
         }
-        collectionView.reloadItems(at: [indexPath])
+    }
+    
+    private func startOfDay(for date: Date) -> UInt64 {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        return UInt64(startOfDay.timeIntervalSince1970)
+    }
+}
+
+//MARK: - TrackerDataProviderDelegate
+extension TrackerViewController: TrackerDataProviderDelegate {
+    func didUpdate(_ update: TrackerStoreUpdate) {
+        collectionView.performBatchUpdates {
+            let insertedIndexPath = update.insertedIndexes.map { IndexPath(item: $0, section: $0) }
+            let deletedIndexPath = update.deletedIndexes.map { IndexPath(item: $0, section: $0) }
+            collectionView.insertItems(at: insertedIndexPath)
+            collectionView.deleteItems(at: deletedIndexPath)
+        }
+    }
+}
+
+//MARK: - TrackerDataProviderDelegate
+extension TrackerViewController: TrackerCategoryDataProviderDelegate {
+    func didUpdate(_ update: TrackerCategoryStoreUpdate) {
+        collectionView.performBatchUpdates {
+            let insertedIndexPath = update.insertedIndexes.map { IndexPath(item: $0, section: $0) }
+            let deletedIndexPath = update.deletedIndexes.map { IndexPath(item: $0, section: $0) }
+            collectionView.insertItems(at: insertedIndexPath)
+            collectionView.deleteItems(at: deletedIndexPath)
+        }
+    }
+}
+
+//MARK: - TrackerDataProviderDelegate
+extension TrackerViewController: TrackerRecordDataProviderDelegate {
+    func didUpdate(_ update: TrackerRecordStoreUpdate) {
+        collectionView.performBatchUpdates {
+            let insertedIndexPath = update.insertedIndexes.map { IndexPath(item: $0, section: $0) }
+            let deletedIndexPath = update.deletedIndexes.map { IndexPath(item: $0, section: $0) }
+            collectionView.insertItems(at: insertedIndexPath)
+            collectionView.deleteItems(at: deletedIndexPath)
+        }
     }
 }
 
