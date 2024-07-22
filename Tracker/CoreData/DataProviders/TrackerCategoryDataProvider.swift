@@ -13,7 +13,7 @@ protocol TrackerCategoryDataProviderProtocol {
     func numberOfRowsInSection(_ section: Int) -> Int
     func object(at indexPath: IndexPath) -> TrackerCategory?
     func createCategory(_ category: TrackerCategory) throws
-    func clearData()
+    func clearData() throws
     func fetchCategories() -> [TrackerCategory]
 }
 
@@ -56,7 +56,6 @@ final class TrackerCategoryDataProvider: NSObject {
     //MARK: - Init
     init(trackerCategoryStore: TrackerCategoryDataStore, delegate: TrackerCategoryDataProviderDelegate) throws {
         guard let context = trackerCategoryStore.managedObjectContext else {
-            print("Ошибка инициализации контекста")
             throw TrackerCategoryDataProviderErrors.failedToInitializeContext
         }
         self.delegate = delegate
@@ -92,7 +91,6 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
         do {
             try? trackerCategoryDataStore.create(category)
         } catch {
-            print("Ошибка создания категории: \(error)")
             throw error
         }
     }
@@ -101,17 +99,17 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
         trackerCategoryDataStore.fetchCategories()
     }
     
-    func clearData() {
+    func clearData() throws {
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
         
         do {
             let results = try context.fetch(request)
-            for result in results as! [NSManagedObject] {
+            for result in results as? [NSManagedObject] ?? [] {
                 context.delete(result)
             }
             try context.save()
         } catch {
-            print("Не удалось удалить данные")
+            throw error
         }
     }
 }
@@ -128,15 +126,20 @@ extension TrackerCategoryDataProvider: NSFetchedResultsControllerDelegate {
         guard let insertedIndexes = insertedIndexes, let deletedIndexes = deletedIndexes else {
             return
         }
-        delegate?.didUpdate(TrackerCategoryStoreUpdate(
-            insertedIndexes: insertedIndexes,
-            deletedIndexes: deletedIndexes
-        ))
+        delegate?.didUpdate(
+            .init(
+                insertedIndexes: insertedIndexes,
+                deletedIndexes: deletedIndexes))
         self.insertedIndexes = nil
         self.deletedIndexes = nil
     }
     
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    func controller(
+        _ controller: NSFetchedResultsController<NSFetchRequestResult>,
+        didChange anObject: Any,
+        at indexPath: IndexPath?,
+        for type: NSFetchedResultsChangeType,
+        newIndexPath: IndexPath?) {
         switch type {
         case .delete:
             if let indexPath = indexPath {

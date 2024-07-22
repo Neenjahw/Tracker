@@ -45,19 +45,19 @@ final class OnboardingView: UIView {
     }
     
     //MARK: - Public Methods
-    public func setPageLabelText(text: String) {
+    func setPageLabelText(text: String) {
         pageLabel.text = text
     }
     
-    public func setButton(text: String) {
+    func setButton(text: String) {
         pageButton.setTitle(text, for: .normal)
     }
     
-    public func setImageView(for image: UIImage) {
+    func setImageView(for image: UIImage) {
         pageImageView.image = image
     }
     
-    public func set(transform: CGAffineTransform) {
+    func set(transform: CGAffineTransform) {
         pageLabel.transform = transform
         pageButton.transform = transform
     }

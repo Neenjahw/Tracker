@@ -38,6 +38,7 @@ final class AddCategoryViewController: UIViewController {
         let leftPaddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: textField.frame.height))
         textField.leftView = leftPaddingView
         textField.leftViewMode = .always
+        textField.delegate = self
         
         textField.layer.cornerRadius = UIConstants.textFieldCornerRadius
         return textField
@@ -57,7 +58,8 @@ final class AddCategoryViewController: UIViewController {
     //MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        initialize()
+        setupViews()
+        setConstraints()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         view.addGestureRecognizer(tapGesture)
@@ -97,11 +99,6 @@ extension AddCategoryViewController: UITextFieldDelegate {
 
 //MARK: - AutoLayout
 extension AddCategoryViewController {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-        textField.delegate = self
-    }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground

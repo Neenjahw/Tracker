@@ -53,7 +53,10 @@ final class ScheduleCell: UITableViewCell {
     //MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        initialize()
+        accessoryType = .none
+        selectionStyle = .none
+        setupViews()
+        setConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -67,12 +70,6 @@ final class ScheduleCell: UITableViewCell {
 }
 //MARK: - AutoLayout
 extension ScheduleCell {
-    private func initialize() {
-        accessoryType = .none
-        selectionStyle = .none
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         backgroundColor = .ypLightGray

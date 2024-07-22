@@ -32,7 +32,8 @@ final class CategoryViewController: UIViewController {
                                                                           delegate: self)
             return trackerCategoryDataProvider
         } catch {
-            print("Данные не доступны")
+            presentAlertController(with: "Ошибка", 
+                                   message: "Не удалось инициализировать данные категории")
             return nil
         }
     }()
@@ -65,6 +66,8 @@ final class CategoryViewController: UIViewController {
         tableView.showsVerticalScrollIndicator = false
         tableView.layer.cornerRadius = UIConstants.tableViewCornerRadius
         tableView.backgroundColor = .clear
+        tableView.delegate = self
+        tableView.dataSource = self
         return tableView
     }()
     
@@ -96,7 +99,8 @@ final class CategoryViewController: UIViewController {
     //MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        initialize()
+        setupViews()
+        setConstraints()
         setPlaceholderImage()
     }
     
@@ -113,6 +117,17 @@ final class CategoryViewController: UIViewController {
         addCategoryViewController.delegate = self
         present(addCategoryViewController, animated: true)
     }
+    
+    private func presentAlertController(with title: String, message: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+
 }
 
 //MARK: - UITableViewDataSource
@@ -175,7 +190,8 @@ extension CategoryViewController: AddCategoryViewControllerDelegate {
         do {
             try trackerCategoryDataProvider?.createCategory(category)
         } catch {
-            print("Не удалось создать категорию")
+            presentAlertController(with: "Ошибка", 
+                                   message: "Не удалось создать категорию")
         }
     }
 }
@@ -194,13 +210,6 @@ extension CategoryViewController: TrackerCategoryDataProviderDelegate {
 
 //MARK: - AutoLayout
 extension CategoryViewController {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-        setPlaceholderImage()
-        tableView.delegate = self
-        tableView.dataSource = self
-    }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground

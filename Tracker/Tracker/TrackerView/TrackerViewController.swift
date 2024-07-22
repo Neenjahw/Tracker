@@ -153,7 +153,8 @@ final class TrackerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        initialize()
+        setupViews()
+        setConstraints()
         currentDate = Date()
         updateDateLabelTitle(with: Date())
         reloadData()
@@ -429,10 +430,6 @@ extension TrackerViewController: TrackerRecordDataProviderDelegate {
 
 //MARK: - AutoLayout
 extension TrackerViewController {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground

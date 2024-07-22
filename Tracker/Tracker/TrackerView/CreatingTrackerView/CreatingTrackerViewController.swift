@@ -45,7 +45,8 @@ final class CreatingTrackerViewController: UIViewController {
     //MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        initialize()
+        setupViews()
+        setConstraints()
     }
     
     //MARK: - Private Methods
@@ -64,10 +65,6 @@ final class CreatingTrackerViewController: UIViewController {
 
 //MARK: - AutoLayout
 extension CreatingTrackerViewController {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground

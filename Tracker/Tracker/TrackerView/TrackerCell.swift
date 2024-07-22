@@ -74,7 +74,8 @@ final class TrackerCell: UICollectionViewCell {
     //MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
-        initialize()
+        setupViews()
+        setConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -152,10 +153,6 @@ final class TrackerCell: UICollectionViewCell {
 
 //MARK: - AutoLayout
 extension TrackerCell {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         [trackerCardView,

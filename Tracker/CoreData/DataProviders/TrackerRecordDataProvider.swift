@@ -54,7 +54,6 @@ final class TrackerRecordDataProvider: NSObject {
     //MARK: - Init
     init(trackerRecordStore: TrackerRecordDataStore, delegate: TrackerRecordDataProviderDelegate) throws {
         guard let context = trackerRecordStore.managedObjectContext else {
-            print("Ошибка инициализации контекста")
             throw TrackerRecordDataProviderErrors.failedToInitializeContext
         }
         self.delegate = delegate
@@ -69,7 +68,6 @@ extension TrackerRecordDataProvider: TrackerRecordDataProviderProtocol {
         do {
             try? trackerRecordDataStore.add(trackerRecord: trackerRecord)
         } catch {
-            print("Ошибка создания категории: \(error)")
             throw error
         }
     }
@@ -78,7 +76,6 @@ extension TrackerRecordDataProvider: TrackerRecordDataProviderProtocol {
         do {
             try? trackerRecordDataStore.delete(trackerRecord: trackerRecord)
         } catch {
-            print("Ошибка создания категории: \(error)")
             throw error
         }
     }
@@ -100,15 +97,20 @@ extension TrackerRecordDataProvider: NSFetchedResultsControllerDelegate {
         guard let insertedIndexes = insertedIndexes, let deletedIndexes = deletedIndexes else {
             return
         }
-        delegate?.didUpdate(TrackerRecordStoreUpdate(
-            insertedIndexes: insertedIndexes,
-            deletedIndexes: deletedIndexes
-        ))
+        delegate?.didUpdate(
+            .init(
+                insertedIndexes: insertedIndexes,
+                deletedIndexes: deletedIndexes))
         self.insertedIndexes = nil
         self.deletedIndexes = nil
     }
     
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    func controller(
+        _ controller: NSFetchedResultsController<NSFetchRequestResult>,
+        didChange anObject: Any,
+        at indexPath: IndexPath?,
+        for type: NSFetchedResultsChangeType,
+        newIndexPath: IndexPath?) {
         switch type {
         case .delete:
             if let indexPath = indexPath {

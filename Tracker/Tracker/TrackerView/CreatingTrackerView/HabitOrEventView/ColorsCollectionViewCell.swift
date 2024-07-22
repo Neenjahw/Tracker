@@ -13,14 +13,14 @@ final class ColorsCollectionViewCell: UICollectionViewCell {
     static let colorsCollectionViewCellIdentifier = "ColorsCollectionViewCell"
     
     //MARK: - UIModels
-    lazy var colorView: UIView = {
+    private lazy var colorView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
         view.layer.cornerRadius = UIConstants.colorViewCornerRadius
         return view
     }()
     
-    lazy var colorsSelectedImageFrame: UIImageView = {
+    private lazy var colorsSelectedImageFrame: UIImageView = {
         let image = UIImageView()
         image.image = .colorSelectedFrame
         image.isHidden = true
@@ -30,20 +30,27 @@ final class ColorsCollectionViewCell: UICollectionViewCell {
     //MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
-        initialize()
+        setupViews()
+        setConstraints()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    //MARK: - Public Methods
+    func updateColor(color: UIColor) {
+        colorView.backgroundColor = color
+    }
+    
+    func updateColorFrame(color: UIColor, isHidden: Bool) {
+        colorsSelectedImageFrame.tintColor = color
+        colorsSelectedImageFrame.isHidden = isHidden
+    }
 }
 
 //MARK: - AutoLayout
 extension ColorsCollectionViewCell {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         [colorView,

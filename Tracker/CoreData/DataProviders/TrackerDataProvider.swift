@@ -14,7 +14,7 @@ protocol TrackerDataProviderProtocol {
     func numberOfRowsInSection(_ section: Int) -> Int
     func object(at indexPath: IndexPath) -> Tracker?
     func addTracker(_ tracker: Tracker, for category: TrackerCategory) throws
-    func clearData()
+    func clearData() throws
 }
 
 protocol TrackerDataProviderDelegate: AnyObject {
@@ -56,7 +56,6 @@ final class TrackerDataProvider: NSObject {
     //MARK: - Init
     init(trackerStore: TrackerDataStore, delegate: TrackerDataProviderDelegate) throws {
         guard let context = trackerStore.managedObjectContext else {
-            print("Ошибка инициализации контекста")
             throw TrackerDataProviderErrors.failedToInitializeContext
         }
         self.delegate = delegate
@@ -83,17 +82,16 @@ extension TrackerDataProvider: TrackerDataProviderProtocol {
         try? trackerDataStore.add(tracker, for: category)
     }
     
-    func clearData() {
+    func clearData() throws {
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCoreData")
         do {
             let results = try context.fetch(request)
-            for result in results as! [NSManagedObject] {
+            for result in results as? [NSManagedObject] ?? [] {
                 context.delete(result)
             }
-            
             try context.save()
         } catch {
-            print("Не удалось удалить данные")
+            throw error
         }
     }
 }
@@ -107,16 +105,23 @@ extension TrackerDataProvider: NSFetchedResultsControllerDelegate {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        delegate?.didUpdate(TrackerStoreUpdate(
-            insertedIndexes: insertedIndexes!,
-            deletedIndexes: deletedIndexes!
-        )
-        )
-        insertedIndexes = nil
-        deletedIndexes = nil
+        guard let insertedIndexes = insertedIndexes, let deletedIndexes = deletedIndexes else {
+            return
+        }
+        delegate?.didUpdate(
+            .init(
+                insertedIndexes: insertedIndexes,
+                deletedIndexes: deletedIndexes))
+        self.insertedIndexes = nil
+        self.deletedIndexes = nil
     }
     
-    func controller(_ controller: NSFetchedResultsController<any NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    func controller(
+        _ controller: NSFetchedResultsController<any NSFetchRequestResult>,
+        didChange anObject: Any,
+        at indexPath: IndexPath?,
+        for type: NSFetchedResultsChangeType,
+        newIndexPath: IndexPath?) {
         switch type {
         case .delete:
             if let indexPath = indexPath {

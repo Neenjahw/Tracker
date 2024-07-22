@@ -35,7 +35,7 @@ extension TrackerStore: TrackerDataStore {
         trackerCoreData.id = tracker.id
         trackerCoreData.emoji = tracker.emoji
         trackerCoreData.color = tracker.color
-        trackerCoreData.schedule = tracker.schedule as? NSObject
+        trackerCoreData.schedule = tracker.schedule as NSObject
         trackerCoreData.isHabit = tracker.isHabit
         trackerCoreData.trackerCategory = trackerCategoryCoreData
         trackerCategoryCoreData.addToTrackers(trackerCoreData)

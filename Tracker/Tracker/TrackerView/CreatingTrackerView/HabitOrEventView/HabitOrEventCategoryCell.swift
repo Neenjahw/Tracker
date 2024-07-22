@@ -35,7 +35,10 @@ final class HabitOrEventCategoryCell: UITableViewCell {
     //MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        initialize()
+        accessoryType = .disclosureIndicator
+        selectionStyle = .none
+        setupViews()
+        setConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -62,12 +65,6 @@ final class HabitOrEventCategoryCell: UITableViewCell {
 
 //MARK: - AutoLayout
 extension HabitOrEventCategoryCell {
-    private func initialize() {
-        accessoryType = .disclosureIndicator
-        selectionStyle = .none
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         backgroundColor = .ypLightGray

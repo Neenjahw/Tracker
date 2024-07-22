@@ -9,7 +9,7 @@ final class SupplementaryEmojiView: UICollectionReusableView {
     }
     
     //MARK: - UIModel
-    let titleLabel: UILabel = {
+     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: UIConstants.titleLabelFontSize)
         return label
@@ -31,5 +31,10 @@ final class SupplementaryEmojiView: UICollectionReusableView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    //MARK: - Public Methods
+    func updateTitleLabel(text: String) {
+        titleLabel.text = text
     }
 }

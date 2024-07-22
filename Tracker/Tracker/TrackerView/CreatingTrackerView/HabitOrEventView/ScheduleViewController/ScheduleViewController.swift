@@ -40,6 +40,8 @@ final class ScheduleViewController: UIViewController {
         tableView.showsVerticalScrollIndicator = false
         tableView.layer.cornerRadius = UIConstants.tableViewCornerRadius
         tableView.backgroundColor = .clear
+        tableView.dataSource = self
+        tableView.delegate = self
         return tableView
     }()
     
@@ -67,8 +69,8 @@ final class ScheduleViewController: UIViewController {
     //MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        initialize()
-        print(selectedDays)
+        setupViews()
+        setConstraints()
     }
     
     //MARK: - Private Methods
@@ -123,12 +125,6 @@ extension ScheduleViewController: ScheduleViewCellDelegate {
 
 //MARK: - AutoLayout
 extension ScheduleViewController {
-    private func initialize() {
-        tableView.dataSource = self
-        tableView.delegate = self
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground

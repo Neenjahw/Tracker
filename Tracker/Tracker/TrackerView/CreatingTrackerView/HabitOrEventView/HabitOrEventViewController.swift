@@ -94,7 +94,7 @@ final class HabitOrEventViewController: UIViewController {
         rightPaddingView.addSubview(clearButton)
         textField.rightView = rightPaddingView
         textField.rightViewMode = .whileEditing
-        
+        textField.delegate = self
         textField.layer.cornerRadius = UIConstants.textFieldCornerRadius
         return textField
     }()
@@ -114,6 +114,8 @@ final class HabitOrEventViewController: UIViewController {
         tableView.register(HabitOrEventCategoryCell.self, forCellReuseIdentifier: HabitOrEventCategoryCell.habitCategoryCellIdentifier)
         tableView.register(HabitOrEventScheduleCell.self, forCellReuseIdentifier: HabitOrEventScheduleCell.habitScheduleCellIdentifier)
         tableView.bounces = false
+        tableView.dataSource = self
+        tableView.delegate = self
         return tableView
     }()
     
@@ -124,6 +126,8 @@ final class HabitOrEventViewController: UIViewController {
         collectionView.register(SupplementaryEmojiView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
         collectionView.tag = 1
         collectionView.isScrollEnabled = false
+        collectionView.dataSource = self
+        collectionView.delegate = self
         return collectionView
     }()
     
@@ -134,6 +138,8 @@ final class HabitOrEventViewController: UIViewController {
         collectionView.register(SupplementaryColorsView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
         collectionView.tag = 2
         collectionView.isScrollEnabled = false
+        collectionView.dataSource = self
+        collectionView.delegate = self
         return collectionView
     }()
     
@@ -163,7 +169,8 @@ final class HabitOrEventViewController: UIViewController {
     //MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        initialize()
+        setupViews()
+        setConstraints()
         chooseHabitOrIrregularEvent()
     }
     
@@ -441,13 +448,13 @@ extension HabitOrEventViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCollectionViewCell.emojiCollectionViewCellIdentifier, for: indexPath) as? EmojiCollectionViewCell else {
                 return UICollectionViewCell()
             }
-            cell.emojiLabel.text = emoji[indexPath.row]
+            cell.updateEmojiLabel(emoji: emoji[indexPath.row])
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorsCollectionViewCell.colorsCollectionViewCellIdentifier, for: indexPath) as? ColorsCollectionViewCell else {
                 return UICollectionViewCell()
             }
-            cell.colorView.backgroundColor = colors[indexPath.row]
+            cell.updateColor(color: colors[indexPath.row])
             return cell
         default:
             return UICollectionViewCell()
@@ -471,11 +478,11 @@ extension HabitOrEventViewController: UICollectionViewDataSource {
         switch collectionView.tag {
         case 1:
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: id, for: indexPath) as? SupplementaryEmojiView
-            view?.titleLabel.text = "Emoji"
+            view?.updateTitleLabel(text: "Emoji")
             return view!
         case 2:
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: id, for: indexPath) as? SupplementaryColorsView
-            view?.titleLabel.text = "Цвет"
+            view?.updateTitleLabel(text: "Цвет")
             return view!
         default:
             return UICollectionReusableView()
@@ -510,15 +517,14 @@ extension HabitOrEventViewController: UICollectionViewDelegate {
         case 1:
             let selectedEmoji = emoji[indexPath.row]
             if let cell = emojiCollectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
-                cell.emojiLabel.backgroundColor = .ypGraySelectEmoji
+                cell.updateEmojiLabelBackground(color: .ypGraySelectEmoji)
             }
             self.selectedEmoji = selectedEmoji
             updateCreateButtonAvailability()
         case 2:
             let selectedColor = colors[indexPath.row]
             if let cell = colorsCollectionView.cellForItem(at: indexPath) as? ColorsCollectionViewCell {
-                cell.colorsSelectedImageFrame.tintColor = colors[indexPath.row]
-                cell.colorsSelectedImageFrame.isHidden = false
+                cell.updateColorFrame(color: colors[indexPath.row], isHidden: false)
                 self.selectedColor = selectedColor
                 updateCreateButtonAvailability()
             }
@@ -532,14 +538,14 @@ extension HabitOrEventViewController: UICollectionViewDelegate {
         case 1:
             let deselectedEmoji = emoji[indexPath.row]
             if let cell = emojiCollectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
-                cell.emojiLabel.backgroundColor = .clear
+                cell.updateEmojiLabelBackground(color: .clear)
             }
             self.selectedEmoji = nil
             updateCreateButtonAvailability()
         case 2:
             let deselectedColor = colors[indexPath.row]
             if let cell = colorsCollectionView.cellForItem(at: indexPath) as? ColorsCollectionViewCell {
-                cell.colorsSelectedImageFrame.isHidden = true
+                cell.updateColorFrame(color: colors[indexPath.row], isHidden: true)
             }
             self.selectedColor = nil
             updateCreateButtonAvailability()
@@ -574,17 +580,6 @@ extension HabitOrEventViewController: TrackerDataProviderDelegate {
 
 //MARK: - AutoLayout
 extension HabitOrEventViewController {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-        textField.delegate = self
-        tableView.dataSource = self
-        tableView.delegate = self
-        emojiCollectionView.dataSource = self
-        emojiCollectionView.delegate = self
-        colorsCollectionView.dataSource = self
-        colorsCollectionView.delegate = self
-    }
     
     private func setupViews() {
         view.backgroundColor = .systemBackground

@@ -14,7 +14,7 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
     static let emojiCollectionViewCellIdentifier = "EmojiCollectionViewCell"
     
     //MARK: - UIModels
-    lazy var emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.emojiLabelFontSize, weight: .bold)
@@ -26,20 +26,26 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
     //MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
-        initialize()
+        setupViews()
+        setConstraints()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    //MARK: - Public Methods
+    func updateEmojiLabel(emoji: String) {
+        emojiLabel.text = emoji
+    }
+    
+    func updateEmojiLabelBackground(color: UIColor) {
+        emojiLabel.backgroundColor = color
+    }
 }
 
 //MARK: - AutoLayout
 extension EmojiCollectionViewCell {
-    private func initialize() {
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         [emojiLabel].forEach {

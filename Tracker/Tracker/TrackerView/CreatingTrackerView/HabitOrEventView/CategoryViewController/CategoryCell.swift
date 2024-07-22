@@ -28,7 +28,10 @@ final class CategoryCell: UITableViewCell {
     //MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        initialize()
+        accessoryType = .none
+        selectionStyle = .none
+        setupViews()
+        setConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -36,11 +39,11 @@ final class CategoryCell: UITableViewCell {
     }
     
     //MARK: - Public Methods
-    public func setCheckMark() {
+    func setCheckMark() {
         checkmarkImageView.image = .categoryCheckmark
     }
     
-    public func removeCheckMark() {
+    func removeCheckMark() {
         checkmarkImageView.image = nil
     }
     
@@ -52,12 +55,6 @@ final class CategoryCell: UITableViewCell {
 
 //MARK: - AutoLayout
 extension CategoryCell {
-    private func initialize() {
-        accessoryType = .none
-        selectionStyle = .none
-        setupViews()
-        setConstraints()
-    }
     
     private func setupViews() {
         backgroundColor = .ypLightGray
