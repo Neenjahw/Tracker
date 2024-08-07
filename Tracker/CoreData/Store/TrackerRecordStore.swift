@@ -37,7 +37,6 @@ extension TrackerRecordStore: TrackerRecordDataStore {
     
     func delete(trackerRecord: TrackerRecord) throws {
         let request = NSFetchRequest<TrackerRecordCoreData>(entityName: "TrackerRecordCoreData")
-        print("Date in Current Date - \(trackerRecord.date)")
         request.predicate = NSPredicate(format: "id == %@ AND date == %lld", trackerRecord.id as CVarArg, trackerRecord.date)
         if let trackerRecordCoreData = try context.fetch(request).first {
             context.delete(trackerRecordCoreData)
@@ -51,7 +50,6 @@ extension TrackerRecordStore: TrackerRecordDataStore {
         
         do {
             let results = try context.fetch(request)
-            print("Date in CoreData = \(results.first?.date)")
             return results.map { TrackerRecord(id: $0.id ?? UUID(), date: UInt64($0.date)) }
         } catch {
             print("Failed to fetch trackerRecords: \(error)")

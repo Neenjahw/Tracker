@@ -66,7 +66,7 @@ final class TrackerRecordDataProvider: NSObject {
 extension TrackerRecordDataProvider: TrackerRecordDataProviderProtocol {
     func add(trackerRecord: TrackerRecord) throws {
         do {
-            try? trackerRecordDataStore.add(trackerRecord: trackerRecord)
+            try trackerRecordDataStore.add(trackerRecord: trackerRecord)
         } catch {
             throw error
         }
@@ -74,7 +74,7 @@ extension TrackerRecordDataProvider: TrackerRecordDataProviderProtocol {
     
     func delete(trackerRecord: TrackerRecord) throws {
         do {
-            try? trackerRecordDataStore.delete(trackerRecord: trackerRecord)
+            try trackerRecordDataStore.delete(trackerRecord: trackerRecord)
         } catch {
             throw error
         }

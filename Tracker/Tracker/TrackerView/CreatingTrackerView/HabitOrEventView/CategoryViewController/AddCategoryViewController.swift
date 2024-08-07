@@ -4,6 +4,7 @@ import UIKit
 //MARK: - AddCategoryViewControllerDelegate
 protocol AddCategoryViewControllerDelegate: NSObject {
     func add(category: TrackerCategory)
+    func update(_ category: TrackerCategory, with newTitle: String)
 }
 
 //MARK: - CategoryViewController
@@ -19,12 +20,12 @@ final class AddCategoryViewController: UIViewController {
     
     //MARK: - Public Properties
     weak var delegate: AddCategoryViewControllerDelegate?
-    private var nameOfCategory: String?
+    private var category: TrackerCategory?
+    private var isEditingCategory: Bool?
     
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая категория"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
         return label
@@ -55,21 +56,50 @@ final class AddCategoryViewController: UIViewController {
         return button
     }()
     
+    init(delegate: AddCategoryViewControllerDelegate? = nil, category: TrackerCategory? = nil, isEditingCategory: Bool) {
+        super.init(nibName: nil, bundle: nil)
+        self.delegate = delegate
+        self.category = category
+        self.isEditingCategory = isEditingCategory
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     //MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setConstraints()
-        
+        changeTitleForEditingCategory()
+        textField.text = category?.title
+        setTapGesture()
+    }
+    
+    //MARK: - Private Methods
+    private func changeTitleForEditingCategory() {
+        if isEditingCategory ?? false {
+            titleLabel.text = "Редактирование категории"
+        } else {
+            titleLabel.text = "Новая категория"
+        }
+    }
+    
+    private func setTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         view.addGestureRecognizer(tapGesture)
     }
     
-    //MARK: - Private Methods
     @objc private func didTapCreateButton() {
-        guard let text = textField.text else { return }
-        let trackerCategory = TrackerCategory(title: text, trackers: [])
-        delegate?.add(category: trackerCategory)
+        guard let title = textField.text, !title.isEmpty else { return }
+
+        if let category = category {
+            delegate?.update(category, with: title)
+        } else {
+            let newCategory = TrackerCategory(title: title, trackers: [])
+            delegate?.add(category: newCategory)
+        }
         dismiss(animated: true)
     }
     
@@ -81,7 +111,6 @@ final class AddCategoryViewController: UIViewController {
 //MARK: - UITextFieldDelegate
 extension AddCategoryViewController: UITextFieldDelegate {
     func textFieldDidChangeSelection(_ textField: UITextField) {
-        nameOfCategory = textField.text
         if let text = textField.text, !text.isEmpty {
             createButton.isEnabled = true
             createButton.backgroundColor = .ypBlack

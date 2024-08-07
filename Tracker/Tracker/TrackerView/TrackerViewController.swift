@@ -14,8 +14,9 @@ final class TrackerViewController: UIViewController {
     }
     
     //MARK: - Private Properties
-    private var visibleCategories: [TrackerCategory] = []
     private var categories: [TrackerCategory] = []
+    private var filteredCategories: [TrackerCategory] = []
+    private var visibleCategories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
     private var currentDate: Date?
     private lazy var trackerCategoryDataProvider: TrackerCategoryDataProviderProtocol? = {
@@ -115,6 +116,7 @@ final class TrackerViewController: UIViewController {
     private lazy var placeholderImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = .placeholderTrackerView
+        imageView.isHidden = true
         return imageView
     }()
     
@@ -122,7 +124,33 @@ final class TrackerViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.placeholderLabelFontSize)
         label.text = "Что будем отслеживать?"
+        label.isHidden = true
         return label
+    }()
+    
+    private lazy var placeholderSearchTrackerImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = .placeholderTrackerSearch
+        imageView.isHidden = true
+        return imageView
+    }()
+    
+    private lazy var placeholderSearchTrackerLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: UIConstants.placeholderLabelFontSize)
+        label.text = "Ничего не найдено"
+        label.isHidden = true
+        return label
+    }()
+    
+    private lazy var filterButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Фильтры", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .ypBlue
+        button.layer.cornerRadius = 16
+        button.addTarget(self, action: #selector(chooseFilterForTrackers), for: .touchUpInside)
+        return button
     }()
     
     private lazy var collectionView: UICollectionView = {
@@ -133,6 +161,7 @@ final class TrackerViewController: UIViewController {
         collectionView.register(SupplementaryView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
         collectionView.dataSource = self
         collectionView.delegate = self
+        collectionView.showsVerticalScrollIndicator = false
         return collectionView
     }()
     
@@ -169,15 +198,21 @@ final class TrackerViewController: UIViewController {
     private func reloadData() {
         if let trackerCategories = trackerCategoryDataProvider?.fetchCategories() {
             categories = trackerCategories
-            visibleCategories = categories
-            reloadVisibleCategories()
+            filteredCategories = categories
             completedTrackers = trackerRecordDataProvider?.fetch() ?? []
+            reloadVisibleCategories()
+            setPlaceholderImage()
         }
     }
     
     private func setPlaceholderImage() {
-        placeholderImageView.isHidden = !visibleCategories.isEmpty
-        placeholderLabel.isHidden = !visibleCategories.isEmpty
+        let noCategories = categories.isEmpty
+        let noVisibleCategories = visibleCategories.isEmpty
+        
+        placeholderImageView.isHidden = !noCategories
+        placeholderLabel.isHidden = !noCategories
+        placeholderSearchTrackerImage.isHidden = !(!noCategories && noVisibleCategories)
+        placeholderSearchTrackerLabel.isHidden = !(!noCategories && noVisibleCategories)
     }
     
     private func reloadVisibleCategories() {
@@ -185,7 +220,7 @@ final class TrackerViewController: UIViewController {
         guard let currentDate = currentDate else { return }
         let filterText = (searchTextField.text ?? "").lowercased()
         
-        visibleCategories = categories.compactMap { category in
+        visibleCategories = filteredCategories.compactMap { category in
             let trackers = category.trackers.filter { tracker in
                 let textCondition = filterText.isEmpty || tracker.name.lowercased().contains(filterText)
                 var dateCondition = false
@@ -203,7 +238,6 @@ final class TrackerViewController: UIViewController {
                         dateCondition = calendar.isDate(creationDate, inSameDayAs: currentDate)
                     }
                 }
-                
                 return textCondition && dateCondition
             }
             
@@ -211,8 +245,8 @@ final class TrackerViewController: UIViewController {
         }
         
         collectionView.reloadData()
+        setPlaceholderImage()
     }
-    
     
     
     private func isTrackerCompletedToday(id: UUID) -> Bool {
@@ -261,6 +295,13 @@ final class TrackerViewController: UIViewController {
     @objc private func clearTextField() {
         searchTextField.text = ""
         cancelButton.isHidden = true
+        reloadVisibleCategories()
+    }
+    
+    @objc private func chooseFilterForTrackers() {
+        let filterTrackersViewController = FilterTrackersViewController(categories: categories, completedTrackers: completedTrackers, delegate: self)
+        
+        present(filterTrackersViewController, animated: true)
     }
 }
 
@@ -270,6 +311,19 @@ extension TrackerViewController: UITextFieldDelegate {
         textField.resignFirstResponder()
         reloadVisibleCategories()
         cancelButton.isHidden = false
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = textField.text ?? ""
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+        
+        reloadVisibleCategories()
+        cancelButton.isHidden = updatedText.isEmpty
+        setPlaceholderImage()
+        
         return true
     }
 }
@@ -428,6 +482,14 @@ extension TrackerViewController: TrackerRecordDataProviderDelegate {
     }
 }
 
+//MARK: - FilterTrackersViewControllerDelegate
+extension TrackerViewController: FilterTrackersViewControllerDelegate {
+    func filterCategories(_ filteredCategories: [TrackerCategory]) {
+        self.filteredCategories = filteredCategories
+        reloadVisibleCategories()
+    }
+}
+
 //MARK: - AutoLayout
 extension TrackerViewController {
     
@@ -439,7 +501,10 @@ extension TrackerViewController {
          searchStackView,
          collectionView,
          placeholderImageView,
-         placeholderLabel].forEach {
+         placeholderLabel,
+         placeholderSearchTrackerImage,
+         placeholderSearchTrackerLabel,
+         filterButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
@@ -485,7 +550,18 @@ extension TrackerViewController {
             placeholderImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             placeholderLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
-            placeholderLabel.centerXAnchor.constraint(equalTo: placeholderImageView.centerXAnchor)
+            placeholderLabel.centerXAnchor.constraint(equalTo: placeholderImageView.centerXAnchor),
+            
+            placeholderSearchTrackerImage.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -246),
+            placeholderSearchTrackerImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            placeholderSearchTrackerLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
+            placeholderSearchTrackerLabel.centerXAnchor.constraint(equalTo: placeholderImageView.centerXAnchor),
+            
+            filterButton.heightAnchor.constraint(equalToConstant: 50),
+            filterButton.widthAnchor.constraint(equalToConstant: 114),
+            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            filterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
     }
 }

@@ -536,14 +536,12 @@ extension HabitOrEventViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         switch collectionView.tag {
         case 1:
-            let deselectedEmoji = emoji[indexPath.row]
             if let cell = emojiCollectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
                 cell.updateEmojiLabelBackground(color: .clear)
             }
             self.selectedEmoji = nil
             updateCreateButtonAvailability()
         case 2:
-            let deselectedColor = colors[indexPath.row]
             if let cell = colorsCollectionView.cellForItem(at: indexPath) as? ColorsCollectionViewCell {
                 cell.updateColorFrame(color: colors[indexPath.row], isHidden: true)
             }

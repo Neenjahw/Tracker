@@ -23,3 +23,4 @@ enum DayOfWeek: Int, CaseIterable, Codable{
         }
     }
 }
+

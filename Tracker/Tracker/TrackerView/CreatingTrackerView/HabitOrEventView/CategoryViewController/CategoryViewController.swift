@@ -11,7 +11,6 @@ final class CategoryViewController: UIViewController {
     //MARK: - UIConstants
     private enum UIConstants {
         static let titleLabelFontSize: CGFloat = 16
-        static let tableViewCornerRadius: CGFloat = 16
         static let placeholderLabelFontSize: CGFloat = 12
         static let addCategoryButtonFontSize: CGFloat = 16
         static let addCategoryButtonCornerRadius: CGFloat = 16
@@ -24,6 +23,7 @@ final class CategoryViewController: UIViewController {
     
     //MARK: - Private properties
     private var selectedCategory: TrackerCategory? = nil
+    private var selectedIndexPath: IndexPath?
     
     private lazy var trackerCategoryDataProvider: TrackerCategoryDataProviderProtocol? = {
         let trackerCategoryDataStore = TrackerCategoryStore()
@@ -32,7 +32,7 @@ final class CategoryViewController: UIViewController {
                                                                           delegate: self)
             return trackerCategoryDataProvider
         } catch {
-            presentAlertController(with: "Ошибка", 
+            presentAlertController(with: "Ошибка",
                                    message: "Не удалось инициализировать данные категории")
             return nil
         }
@@ -64,7 +64,6 @@ final class CategoryViewController: UIViewController {
         tableView.bounces = false
         tableView.layer.masksToBounds = true
         tableView.showsVerticalScrollIndicator = false
-        tableView.layer.cornerRadius = UIConstants.tableViewCornerRadius
         tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
@@ -113,7 +112,7 @@ final class CategoryViewController: UIViewController {
     }
     
     @objc private func didTapAddCategoryButton() {
-        let addCategoryViewController = AddCategoryViewController()
+        let addCategoryViewController = AddCategoryViewController(isEditingCategory: false)
         addCategoryViewController.delegate = self
         present(addCategoryViewController, animated: true)
     }
@@ -127,7 +126,6 @@ final class CategoryViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
     }
-
 }
 
 //MARK: - UITableViewDataSource
@@ -135,6 +133,7 @@ extension CategoryViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         return trackerCategoryDataProvider?.numberOfSections ?? 0
     }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         setPlaceholderImage()
         return trackerCategoryDataProvider?.numberOfRowsInSection(section) ?? 0
@@ -165,32 +164,75 @@ extension CategoryViewController: UITableViewDataSource {
 extension CategoryViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let cell = tableView.cellForRow(at: indexPath) as? CategoryCell else {
-            return
-        }
         
         guard let trackerCategory = trackerCategoryDataProvider?.object(at: indexPath) else { return }
         selectedCategory = trackerCategory
         delegate?.didSelect(category: selectedCategory)
-        cell.setCheckMark()
+        
+        tableView.reloadData()
+        
         self.dismiss(animated: true)
     }
     
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        guard let cell = tableView.cellForRow(at: indexPath) as? CategoryCell else {
-            return
-        }
-        cell.removeCheckMark()
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard indexPath.count > 0 else { return nil }
+        
+        let category = trackerCategoryDataProvider?.object(at: indexPath)
+        let title = category?.title ?? ""
+        
+        return UIContextMenuConfiguration(actionProvider: { actions in
+            return UIMenu(
+                children: [
+                    UIAction(title: "Редактировать") { _ in
+                        let addCategoryViewController = AddCategoryViewController(delegate: self, category: category, isEditingCategory: true)
+                        self.present(addCategoryViewController, animated: true)
+                    },
+                    UIAction(title: "Удалить", attributes: .destructive) { _ in
+                        let alertController = UIAlertController(
+                            title: "",
+                            message: "Эта категория точно не нужна?",
+                            preferredStyle: .actionSheet)
+                        
+                        let deleteAction = UIAlertAction(
+                            title: "Удалить",
+                            style: .destructive) { _ in
+                                do {
+                                    try self.trackerCategoryDataProvider?.deleteCategory(with: title)
+                                } catch {
+                                    print("Не удалось удалить категорию")
+                                }
+                            }
+                        
+                        let cancelAction = UIAlertAction(
+                            title: "Отменить",
+                            style: .cancel)
+                        
+                        alertController.addAction(deleteAction)
+                        alertController.addAction(cancelAction)
+                        
+                        self.present(alertController, animated: true)
+                    }
+                ])
+        })
     }
 }
 
 //MARK: - AddCategoryViewControllerDelegate
 extension CategoryViewController: AddCategoryViewControllerDelegate {
+    func update(_ category: TrackerCategory, with newTitle: String) {
+        do {
+            try trackerCategoryDataProvider?.updateCategory(category, with: newTitle)
+        } catch {
+            presentAlertController(with: "Ошибка",
+                                   message: "Не удалось обновить категорию")
+        }
+    }
+    
     func add(category: TrackerCategory) {
         do {
             try trackerCategoryDataProvider?.createCategory(category)
         } catch {
-            presentAlertController(with: "Ошибка", 
+            presentAlertController(with: "Ошибка",
                                    message: "Не удалось создать категорию")
         }
     }
@@ -202,8 +244,10 @@ extension CategoryViewController: TrackerCategoryDataProviderDelegate {
         tableView.performBatchUpdates {
             let insertedIndexPaths = update.insertedIndexes.map { IndexPath(row: $0, section: 0) }
             let deletedIndexPaths = update.deletedIndexes.map { IndexPath(row: $0, section: 0) }
+            let updatedIndexesPaths = update.updatedIndexes.map { IndexPath(row: $0, section: 0) }
             tableView.insertRows(at: insertedIndexPaths, with: .automatic)
             tableView.deleteRows(at: deletedIndexPaths, with: .automatic)
+            tableView.reloadRows(at: updatedIndexesPaths, with: .automatic)
         }
     }
 }
