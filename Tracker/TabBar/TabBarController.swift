@@ -11,7 +11,7 @@ final class TabBarController: UITabBarController {
         view.backgroundColor = .white
         tabBar.isTranslucent = false
         
-        let trackerViewController = UINavigationController(rootViewController: TrackerViewController())
+        let trackerViewController = UINavigationController(rootViewController: TrackerListViewController())
         let statisticsViewController = StatisticsViewController()
         
         trackerViewController.tabBarItem = UITabBarItem(

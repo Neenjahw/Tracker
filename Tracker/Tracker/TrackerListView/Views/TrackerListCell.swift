@@ -2,13 +2,13 @@
 import UIKit
 
 //MARK: - TrackerCellDelegate
-protocol TrackerCellDelegate: AnyObject {
+protocol TrackerListCellDelegate: AnyObject {
     func completeTracker(id: UUID, at indexPath: IndexPath)
     func uncompleteTracker(id: UUID, at indexPath: IndexPath)
 }
 
 //MARK: - TrackerCell
-final class TrackerCell: UICollectionViewCell {
+final class TrackerListCell: UICollectionViewCell {
     
     //MARK: - UIConstants
     private enum UIConstants {
@@ -23,7 +23,7 @@ final class TrackerCell: UICollectionViewCell {
     static let collectionCellIdentifier = "CollectionCell"
     
     //MARK: - Public Properties
-    weak var delegate: TrackerCellDelegate?
+    weak var delegate: TrackerListCellDelegate?
     
     //MARK: - Private Properties
     private var isCompletedToday: Bool = false
@@ -152,7 +152,7 @@ final class TrackerCell: UICollectionViewCell {
 }
 
 //MARK: - AutoLayout
-extension TrackerCell {
+extension TrackerListCell {
     
     private func setupViews() {
         [trackerCardView,

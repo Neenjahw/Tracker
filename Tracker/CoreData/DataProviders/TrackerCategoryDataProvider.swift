@@ -120,18 +120,18 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
     }
     
     func updateCategory(_ category: TrackerCategory, with newTitle: String) throws {
-            let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
-            request.predicate = NSPredicate(format: "title == %@", category.title)
-            do {
-                let results = try context.fetch(request)
-                if let existingCategory = results.first as? TrackerCategoryCoreData {
-                    existingCategory.title = newTitle
-                    try context.save()
-                }
-            } catch {
-                throw TrackerCategoryDataProviderErrors.failedToUpdateCategory
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
+        request.predicate = NSPredicate(format: "title == %@", category.title)
+        do {
+            let results = try context.fetch(request)
+            if let existingCategory = results.first as? TrackerCategoryCoreData {
+                existingCategory.title = newTitle
+                try context.save()
             }
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToUpdateCategory
         }
+    }
 }
 
 //MARK: - NSFetchedResultsControllerDelegate
@@ -164,21 +164,21 @@ extension TrackerCategoryDataProvider: NSFetchedResultsControllerDelegate {
         at indexPath: IndexPath?,
         for type: NSFetchedResultsChangeType,
         newIndexPath: IndexPath?) {
-        switch type {
-        case .delete:
-            if let indexPath = indexPath {
-                deletedIndexes?.insert(indexPath.row)
+            switch type {
+            case .delete:
+                if let indexPath = indexPath {
+                    deletedIndexes?.insert(indexPath.row)
+                }
+            case .insert:
+                if let newIndexPath = newIndexPath {
+                    insertedIndexes?.insert(newIndexPath.row)
+                }
+            case .update:
+                if let indexPath = indexPath {
+                    updatedIndexes?.insert(indexPath.row)
+                }
+            default:
+                break
             }
-        case .insert:
-            if let newIndexPath = newIndexPath {
-                insertedIndexes?.insert(newIndexPath.row)
-            }
-        case .update:
-            if let indexPath = indexPath {
-                updatedIndexes?.insert(indexPath.row)
-            }
-        default:
-            break
         }
-    }
 }
