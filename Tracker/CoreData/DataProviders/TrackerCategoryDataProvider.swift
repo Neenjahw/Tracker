@@ -6,6 +6,8 @@ struct TrackerCategoryStoreUpdate {
     let insertedIndexes: IndexSet
     let deletedIndexes: IndexSet
     let updatedIndexes: IndexSet
+    let insertedSections: IndexSet
+    let deletedSections: IndexSet
 }
 
 //MARK: - TrackerDataProviderProtocol
@@ -13,10 +15,13 @@ protocol TrackerCategoryDataProviderProtocol {
     var numberOfSections: Int { get }
     func numberOfRowsInSection(_ section: Int) -> Int
     func object(at indexPath: IndexPath) -> TrackerCategory?
+    func tracker(at indexPath: IndexPath) -> Tracker?
     func createCategory(_ category: TrackerCategory) throws
-    func deleteCategory(with title: String) throws
-    func fetchCategories() -> [TrackerCategory]
+    func deleteCategory(_ trackerCategory: TrackerCategory) throws
+    func fetchAllCategories() -> [TrackerCategory]
     func updateCategory(_ category: TrackerCategory, with newTitle: String) throws
+    func addTrackerToCategory(_ tracker: Tracker, _ trackerCategory: TrackerCategory) throws
+    func deleteTracker(_ tracker: Tracker) throws
 }
 
 protocol TrackerCategoryDataProviderDelegate: AnyObject {
@@ -32,6 +37,8 @@ final class TrackerCategoryDataProvider: NSObject {
         case failedToDeleteCategory
         case failedToCreateCategory
         case failedToUpdateCategory
+        case failedToAddTrackerToCategory
+        case failedToDeleteTrackerFromCategory
     }
     
     //MARK: - Public Properties
@@ -42,6 +49,7 @@ final class TrackerCategoryDataProvider: NSObject {
     private let trackerCategoryDataStore: TrackerCategoryDataStore
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData> = {
         let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+        
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
         let fetchedResultController = NSFetchedResultsController(
@@ -58,6 +66,8 @@ final class TrackerCategoryDataProvider: NSObject {
     private var insertedIndexes: IndexSet?
     private var deletedIndexes: IndexSet?
     private var updatedIndexes: IndexSet?
+    private var insertedSections: IndexSet?
+    private var deletedSections: IndexSet?
     
     //MARK: - Init
     init(trackerCategoryStore: TrackerCategoryDataStore, delegate: TrackerCategoryDataProviderDelegate) throws {
@@ -72,8 +82,9 @@ final class TrackerCategoryDataProvider: NSObject {
 
 //MARK: - TrackerDataProviderProtocol
 extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
+    
     var numberOfSections: Int {
-        fetchedResultsController.sections?.count ?? 0
+        return fetchedResultsController.fetchedObjects?.count ?? 0
     }
     
     func numberOfRowsInSection(_ section: Int) -> Int {
@@ -81,17 +92,41 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
     }
     
     func object(at indexPath: IndexPath) -> TrackerCategory? {
-        let trackerCategoryCoreData = fetchedResultsController.object(at: indexPath)
+        guard let sections = fetchedResultsController.sections,
+              indexPath.section < sections.count,
+              indexPath.row < sections[indexPath.section].numberOfObjects else {
+            return nil
+        }
         
+        let trackerCategoryCoreData = fetchedResultsController.object(at: indexPath)
         guard let title = trackerCategoryCoreData.title,
               let trackerCoreData = trackerCategoryCoreData.trackers?.allObjects as? [TrackerCoreData] else {
             return nil
         }
         
-        let trackers = trackerCoreData.map({ Tracker(trackerCoreData: $0)})
-        
+        let trackers = trackerCoreData.map { Tracker(trackerCoreData: $0) }
         return TrackerCategory(title: title, trackers: trackers)
     }
+    
+    func tracker(at indexPath: IndexPath) -> Tracker? {
+        guard let sections = fetchedResultsController.sections,
+              indexPath.section < sections.count,
+              let category = sections[indexPath.section].objects?.first as? TrackerCategoryCoreData,
+              let trackersSet = category.trackers else {
+            return nil
+        }
+        
+        let trackersArray = Array(trackersSet) as? [TrackerCoreData] ?? []
+        let sortedTrackers = trackersArray.sorted { ($0.name ?? "") < ($1.name ?? "") }
+        
+        guard indexPath.row < sortedTrackers.count else {
+            return nil
+        }
+        
+        let trackerCoreData = sortedTrackers[indexPath.row]
+        return Tracker(trackerCoreData: trackerCoreData)
+    }
+    
     
     func createCategory(_ category: TrackerCategory) throws {
         do {
@@ -101,33 +136,37 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
         }
     }
     
-    func fetchCategories() -> [TrackerCategory] {
-        trackerCategoryDataStore.fetchCategories()
+    func addTrackerToCategory(_ tracker: Tracker, _ trackerCategory: TrackerCategory) throws {
+        do {
+            try trackerCategoryDataStore.addTrackerToCategory(tracker, trackerCategory)
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToAddTrackerToCategory
+        }
     }
     
-    func deleteCategory(with title: String) throws {
-        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
-        request.predicate = NSPredicate(format: "title == %@", title)
+    func fetchAllCategories() -> [TrackerCategory] {
+        trackerCategoryDataStore.fetchAllCategories()
+    }
+    
+    func deleteCategory(_ trackerCategory: TrackerCategory) throws {
         do {
-            let results = try context.fetch(request)
-            for result in results as? [NSManagedObject] ?? [] {
-                context.delete(result)
-            }
-            try context.save()
+            try trackerCategoryDataStore.deleteCategory(trackerCategory)
         } catch {
             throw TrackerCategoryDataProviderErrors.failedToDeleteCategory
         }
     }
     
-    func updateCategory(_ category: TrackerCategory, with newTitle: String) throws {
-        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
-        request.predicate = NSPredicate(format: "title == %@", category.title)
+    func deleteTracker(_ tracker: Tracker) throws {
         do {
-            let results = try context.fetch(request)
-            if let existingCategory = results.first as? TrackerCategoryCoreData {
-                existingCategory.title = newTitle
-                try context.save()
-            }
+            try trackerCategoryDataStore.deleteTracker(tracker)
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToDeleteTrackerFromCategory
+        }
+    }
+    
+    func updateCategory(_ category: TrackerCategory, with newTitle: String) throws {
+        do {
+            try trackerCategoryDataStore.update(category, with: newTitle)
         } catch {
             throw TrackerCategoryDataProviderErrors.failedToUpdateCategory
         }
@@ -141,21 +180,29 @@ extension TrackerCategoryDataProvider: NSFetchedResultsControllerDelegate {
         insertedIndexes = IndexSet()
         deletedIndexes = IndexSet()
         updatedIndexes = IndexSet()
+        insertedSections = IndexSet()
+        deletedSections = IndexSet()
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         guard
             let insertedIndexes = insertedIndexes,
             let deletedIndexes = deletedIndexes,
-            let updatedIndexes = updatedIndexes else { return }
+            let updatedIndexes = updatedIndexes,
+            let insertedSections = insertedSections,
+            let deletedSections = deletedSections else { return }
         delegate?.didUpdate(
             .init(
                 insertedIndexes: insertedIndexes,
                 deletedIndexes: deletedIndexes,
-                updatedIndexes: updatedIndexes))
+                updatedIndexes: updatedIndexes,
+                insertedSections: insertedSections,
+                deletedSections: deletedSections))
         self.insertedIndexes = nil
         self.deletedIndexes = nil
         self.updatedIndexes = nil
+        self.insertedSections = nil
+        self.deletedSections = nil
     }
     
     func controller(
@@ -177,6 +224,21 @@ extension TrackerCategoryDataProvider: NSFetchedResultsControllerDelegate {
                 if let indexPath = indexPath {
                     updatedIndexes?.insert(indexPath.row)
                 }
+            default:
+                break
+            }
+        }
+    
+    func controller(
+        _ controller: NSFetchedResultsController<any NSFetchRequestResult>,
+        didChange sectionInfo: any NSFetchedResultsSectionInfo,
+        atSectionIndex sectionIndex: Int,
+        for type: NSFetchedResultsChangeType) {
+            switch type {
+            case .insert:
+                insertedSections?.insert(sectionIndex)
+            case .delete:
+                deletedSections?.insert(sectionIndex)
             default:
                 break
             }

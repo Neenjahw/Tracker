@@ -2,7 +2,10 @@
 import UIKit
 
 //MARK: - HabitViewController
-final class HabitOrEventViewController: UIViewController {
+final class HabitOrEventViewController: UIViewController, TrackerDataProviderDelegate {
+    func didUpdate(_ update: TrackerStoreUpdate) {
+    }
+    
     
     //MARK: - UIConstants
     private enum UIConstants {
@@ -16,6 +19,7 @@ final class HabitOrEventViewController: UIViewController {
         static let tableViewCornerRadius: CGFloat = 16
         static let habitOrEventCategoryCellCornerRadius: CGFloat = 16
         static let habitOrEventScheduleCellCornerRadius: CGFloat = 16
+        static let trackerRecordDaysLabelFontSize: CGFloat = 32
     }
     
     //MARK: - Public Properties
@@ -25,10 +29,13 @@ final class HabitOrEventViewController: UIViewController {
     //MARK: - Private Properties
     private var tableViewTopConstraint: NSLayoutConstraint?
     
+    private var trackerName: String?
     private var selectedDays: [DayOfWeek] = []
     private var selectedCategory: TrackerCategory?
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
+    private var isEditingTrackerState: Bool?
+    private var completedDays: Int?
     private let params: GeometricParams = {
         let params = GeometricParams(cellCount: 6,
                                      topInset: 24,
@@ -44,17 +51,29 @@ final class HabitOrEventViewController: UIViewController {
                                      .ypLightPinkCard, .ypLightBlueCard, .ypMintCard, .ypUltramarineCard, .ypPeachCard, .ypPinkCard,
                                      .ypLightPeachCard, .ypCornflowerBlueCard, .ypIndigoCard, .ypLightIndigoCard, .ypAmethystCard, .ypJadeCard]
     
-    private lazy var trackerDataProvider: TrackerDataProviderProtocol? = {
-        let trackerDataStore = TrackerStore()
+    private lazy var trackerCategoryDataProvider: TrackerCategoryDataProviderProtocol? = {
+        let trackerCategoryDataStore = TrackerCategoryStore()
         do {
-            try trackerDataProvider = TrackerDataProvider(trackerStore:trackerDataStore,
-                                                          delegate: self)
-            return trackerDataProvider
+            try trackerCategoryDataProvider = TrackerCategoryDataProvider(trackerCategoryStore:trackerCategoryDataStore,
+                                                                          delegate: self)
+            return trackerCategoryDataProvider
         } catch {
             print("Данные не доступны")
             return nil
         }
     }()
+    
+    private lazy var trackerDataProvider: TrackerDataProviderProtocol? = {
+         let trackerDataStore = TrackerStore()
+         do {
+             try trackerDataProvider = TrackerDataProvider(trackerStore:trackerDataStore,
+                                                           delegate: self)
+             return trackerDataProvider
+         } catch {
+             print("Данные не доступны")
+             return nil
+         }
+     }()
     
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
@@ -62,6 +81,15 @@ final class HabitOrEventViewController: UIViewController {
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
         label.textColor = .black
+        return label
+    }()
+    
+    private lazy var trackerRecordDaysLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: UIConstants.trackerRecordDaysLabelFontSize)
+        label.textColor = .black
+        label.text = String(completedDays ?? 0)
         return label
     }()
     
@@ -172,6 +200,27 @@ final class HabitOrEventViewController: UIViewController {
         setupViews()
         setConstraints()
         chooseHabitOrIrregularEvent()
+        changeStateOnEditing()
+    }
+    
+    //MARK: - Init
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    init(tracker: Tracker, days: Int, isEditing: Bool) {
+            self.trackerName = tracker.name
+            self.selectedDays = tracker.schedule
+            self.selectedEmoji = tracker.emoji
+            self.selectedColor = tracker.color
+            self.isHabit = tracker.isHabit
+            self.isEditingTrackerState = isEditing
+        self.completedDays = days
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     //MARK: - Private Methods
@@ -194,7 +243,7 @@ final class HabitOrEventViewController: UIViewController {
     }
     
     private func makeTracker() -> Tracker {
-        let name = textField.text ?? ""
+        trackerName = textField.text ?? ""
         let id = UUID()
         let today = Date()
         var schedule: [DayOfWeek] = []
@@ -216,45 +265,11 @@ final class HabitOrEventViewController: UIViewController {
         let isHabit = isHabit ? true : false
         
         return Tracker(id: id,
-                       name: name,
+                       name: trackerName ?? "",
                        color: selectedColor ?? UIColor(white: 1, alpha: 1),
                        emoji: selectedEmoji ?? "",
                        schedule: schedule,
                        isHabit: isHabit)
-    }
-    
-    @objc private func didTapCancelButton() {
-        selectedDays.removeAll()
-        selectedEmoji = nil
-        dismiss(animated: true)
-    }
-    
-    @objc private func didTapCreateButton() {
-        guard let window = UIApplication.shared.windows.first else {
-            assertionFailure("Invalid window configuration")
-            return
-        }
-        
-        if let category = selectedCategory {
-            do {
-                try trackerDataProvider?.addTracker(makeTracker(),
-                                                    for: category)
-                print(category.trackers)
-            } catch {
-                print("Не удалось создать трекер для категории \(category)")
-            }
-        }
-        
-        let tabBarController = TabBarController()
-        let navigationController = UINavigationController(rootViewController: tabBarController)
-        window.rootViewController = navigationController
-        window.makeKeyAndVisible()
-        navigationController.setNavigationBarHidden(true, animated: true)
-    }
-    
-    @objc private func didTapClearTextFieldButton() {
-        textField.text = ""
-        characterLimitLabel.isHidden = true
     }
     
     private func chooseHabitOrIrregularEvent() {
@@ -275,6 +290,45 @@ final class HabitOrEventViewController: UIViewController {
         let collectionSize = CGFloat(num)
         
         return collectionSize
+    }
+    
+    @objc private func didTapCreateButton() {
+        guard let window = UIApplication.shared.windows.first else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        
+        if let category = selectedCategory {
+            do {
+                try trackerCategoryDataProvider?.addTrackerToCategory(makeTracker(), category)
+            } catch {
+                print("Не удалось создать трекер для категории \(category)")
+            }
+        }
+        
+        let tabBarController = TabBarController()
+        let navigationController = UINavigationController(rootViewController: tabBarController)
+        window.rootViewController = navigationController
+        window.makeKeyAndVisible()
+        navigationController.setNavigationBarHidden(true, animated: true)
+    }
+    
+    @objc private func didTapClearTextFieldButton() {
+        textField.text = ""
+        characterLimitLabel.isHidden = true
+    }
+    
+    @objc private func didTapCancelButton() {
+        selectedDays.removeAll()
+        selectedEmoji = nil
+        dismiss(animated: true)
+    }
+    
+    private func changeStateOnEditing() {
+        if isEditingTrackerState == true {
+            titleLabel.text = "Редактирование привычки"
+            textField.text = trackerName
+        }
     }
 }
 
@@ -572,8 +626,8 @@ extension HabitOrEventViewController: ScheduleViewControllerDelegate {
 }
 
 //MARK: - TrackerDataProviderDelegate
-extension HabitOrEventViewController: TrackerDataProviderDelegate {
-    func didUpdate(_ update: TrackerStoreUpdate) { }
+extension HabitOrEventViewController: TrackerCategoryDataProviderDelegate {
+    func didUpdate(_ update: TrackerCategoryStoreUpdate) { }
 }
 
 //MARK: - AutoLayout
@@ -590,7 +644,8 @@ extension HabitOrEventViewController {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
         
-        [textField,
+        [trackerRecordDaysLabel,
+         textField,
          characterLimitLabel,
          tableView,
          emojiCollectionView,
@@ -618,9 +673,14 @@ extension HabitOrEventViewController {
             contentView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor),
             
+            trackerRecordDaysLabel.heightAnchor.constraint(equalToConstant: 38),
+            trackerRecordDaysLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            trackerRecordDaysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            trackerRecordDaysLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
             textField.heightAnchor.constraint(equalToConstant: 75),
             textField.widthAnchor.constraint(equalToConstant: 400),
-            textField.topAnchor.constraint(equalTo: contentView.topAnchor),
+            textField.topAnchor.constraint(equalTo: trackerRecordDaysLabel.bottomAnchor, constant: 40),
             textField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             textField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             

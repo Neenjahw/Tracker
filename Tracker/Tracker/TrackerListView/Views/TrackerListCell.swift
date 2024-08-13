@@ -153,7 +153,6 @@ final class TrackerListCell: UICollectionViewCell {
 
 //MARK: - AutoLayout
 extension TrackerListCell {
-    
     private func setupViews() {
         [trackerCardView,
          daysCountLabel,

@@ -96,15 +96,20 @@ final class CategoryViewController: UIViewController {
             guard let self = self else { return }
             tableView.insertRows(at: insertedIndexPaths, with: .automatic)
         }
-        
-        viewModel.categoryUpdated = { [weak self] updatedIndexPaths in
+//        
+//        viewModel.categoryUpdated = { [weak self] updatedIndexPaths in
+//            guard let self = self else { return }
+//            tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
+//        }
+//        
+//        viewModel.categoryDeleted = { [weak self] deletedIndexPaths in
+//            guard let self = self else { return }
+//            tableView.deleteRows(at: deletedIndexPaths, with: .automatic)
+//        }
+        viewModel.categoryCreatedSections = { [weak self] insertedSection in
             guard let self = self else { return }
-            tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
-        }
-        
-        viewModel.categoryDeleted = { [weak self] deletedIndexPaths in
-            guard let self = self else { return }
-            tableView.deleteRows(at: deletedIndexPaths, with: .automatic)
+            tableView.reloadSections(insertedSection, with: .automatic)
+            tableView.reloadData()
         }
         
         viewModel.onErrorStateChange = { [weak self] errorMessage in
@@ -115,9 +120,9 @@ final class CategoryViewController: UIViewController {
     
     private func setPlaceholderImage() {
         let trackerCategories = viewModel.fetchCategories()
-        let isEmpty = trackerCategories?.isEmpty
-        placeholderImageView.isHidden = !(isEmpty ?? true)
-        placeholderLabel.isHidden = !(isEmpty ?? true)
+        let isEmpty = trackerCategories.isEmpty
+        placeholderImageView.isHidden = !isEmpty
+        placeholderLabel.isHidden = !isEmpty
     }
     
     private func presentAlertController(message: String) {
@@ -130,6 +135,37 @@ final class CategoryViewController: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
+//    private func configureCellCornerRadius(_ cell: UITableViewCell, at indexPath: IndexPath) {
+//            switch indexPath.row {
+//            case 0:
+//                if viewModel.numberOfSections() == 1 {
+//                    cell.layer.cornerRadius = UIConstants.categoryCellCornerRadius
+//                    cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+//                } else {
+//                    cell.layer.cornerRadius = UIConstants.categoryCellCornerRadius
+//                    cell.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMinXMaxYCorner]
+//                }
+//            case viewModel.numberOfSections() - 1:
+//                cell.layer.cornerRadius = UIConstants.categoryCellCornerRadius
+//                cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+//            default:
+//                cell.layer.cornerRadius = 0
+//                cell.layer.maskedCorners = []
+//                cell.layer.masksToBounds = true
+//            }
+//            cell.layer.masksToBounds = true
+//        }
+//    
+//    private func configureCellSeparatorInset(_ cell: UITableViewCell, at indexPath: IndexPath) {
+//        if viewModel.numberOfSections() == 1 {
+//            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: cell.bounds.width)
+//        } else if indexPath.row == viewModel.numberOfSections() - 1 {
+//            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: cell.bounds.width)
+//        } else {
+//            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+//        }
+//    }
+    
     @objc private func didTapAddCategoryButton() {
         let addCategoryViewController = AddCategoryViewController(isEditingCategory: false)
         addCategoryViewController.delegate = self
@@ -140,11 +176,13 @@ final class CategoryViewController: UIViewController {
 //MARK: - UITableViewDataSource
 extension CategoryViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
+        print("NumberOFSections in TableView = \(viewModel.numberOfSections())")
         return viewModel.numberOfSections()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         setPlaceholderImage()
+        print("numberOfRows in sections TableView = \(viewModel.numberOfRowsInSection(section))")
         return viewModel.numberOfRowsInSection(section)
     }
     
@@ -154,6 +192,7 @@ extension CategoryViewController: UITableViewDataSource {
         }
         
         guard let trackerCategory = viewModel.editCategory(at: indexPath) else { return UITableViewCell() }
+        print("Category at indexPath \(indexPath.row) = \(String(describing: viewModel.editCategory(at: indexPath)))")
         cell.textLabel?.text = trackerCategory.title
         
         if selectedCategory != nil && cell.textLabel?.text == selectedCategory?.title {
@@ -169,11 +208,10 @@ extension CategoryViewController: UITableViewDataSource {
     }
 }
 
+
 //MARK: - UITableViewDelegate
 extension CategoryViewController: UITableViewDelegate {
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         selectedCategory = viewModel.editCategory(at: indexPath)
         delegate?.didSelect(category: selectedCategory)
         
@@ -182,10 +220,12 @@ extension CategoryViewController: UITableViewDelegate {
         self.dismiss(animated: true)
     }
     
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+    func tableView(_ tableView: UITableView, 
+                   contextMenuConfigurationForRowAt indexPath: IndexPath,
+                   point: CGPoint) -> UIContextMenuConfiguration? {
         guard indexPath.count > 0 else { return nil }
         
-        let trackerCategory = viewModel.editCategory(at: indexPath)
+        guard let trackerCategory = viewModel.editCategory(at: indexPath) else { return nil }
         
         return UIContextMenuConfiguration(actionProvider: { actions in
             return UIMenu(
@@ -203,7 +243,7 @@ extension CategoryViewController: UITableViewDelegate {
                         let deleteAction = UIAlertAction(
                             title: "Удалить",
                             style: .destructive) { _ in
-                                self.viewModel.deleteCategory(at: indexPath)
+//                                self.viewModel.deleteCategory(trackerCategory)
                             }
                         
                         let cancelAction = UIAlertAction(
@@ -223,11 +263,11 @@ extension CategoryViewController: UITableViewDelegate {
 //MARK: - AddCategoryViewControllerDelegate
 extension CategoryViewController: AddCategoryViewControllerDelegate {
     func update(_ category: TrackerCategory, with newTitle: String) {
-            viewModel.updateCategory(category, with: newTitle)
+//            viewModel.updateCategory(category, with: newTitle)
     }
     
     func add(category: TrackerCategory) {
-        viewModel.createCategory(category)
+        viewModel.create(category)
     }
 }
 
