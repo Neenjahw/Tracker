@@ -17,6 +17,12 @@ protocol TrackerCategoryDataProviderProtocol {
     func deleteCategory(with title: String) throws
     func fetchCategories() -> [TrackerCategory]
     func updateCategory(_ category: TrackerCategory, with newTitle: String) throws
+    func editTracker(at id: UUID) throws -> Tracker
+    func deleteTracker(at id: UUID) throws
+    func add(_ tracker: Tracker, for category: TrackerCategory) throws 
+    func editCategory(with trackerId: UUID) throws -> TrackerCategory
+    func update(_ tracker: Tracker, for category: TrackerCategory) throws
+    func changePinnedState(for trackerId: UUID) throws
 }
 
 protocol TrackerCategoryDataProviderDelegate: AnyObject {
@@ -32,6 +38,12 @@ final class TrackerCategoryDataProvider: NSObject {
         case failedToDeleteCategory
         case failedToCreateCategory
         case failedToUpdateCategory
+        case failedToEditCategory
+        case failedToEditTracker
+        case failedToDeleteTracker
+        case failedToUpdateTracker
+        case failedToAddTrackerToCategory
+        case failedToChangePinnedState
     }
     
     //MARK: - Public Properties
@@ -106,12 +118,12 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
     }
     
     func deleteCategory(with title: String) throws {
-        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
+        let request = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
         request.predicate = NSPredicate(format: "title == %@", title)
         do {
-            let results = try context.fetch(request)
-            for result in results as? [NSManagedObject] ?? [] {
-                context.delete(result)
+            let categories = try context.fetch(request)
+            for category in categories {
+                context.delete(category)
             }
             try context.save()
         } catch {
@@ -130,6 +142,78 @@ extension TrackerCategoryDataProvider: TrackerCategoryDataProviderProtocol {
             }
         } catch {
             throw TrackerCategoryDataProviderErrors.failedToUpdateCategory
+        }
+    }
+    
+    func editTracker(at id: UUID) throws -> Tracker {
+        let request = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        do {
+            if let tracker = try context.fetch(request).first {
+                return Tracker(trackerCoreData: tracker)
+            } else {
+                throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Tracker not found"])
+            }
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToEditTracker
+        }
+    }
+    
+    func editCategory(with trackerId: UUID) throws -> TrackerCategory {
+        let request = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+        
+        request.predicate = NSPredicate(format: "SUBQUERY(trackers, $tracker, $tracker.id == %@).@count > 0", trackerId as CVarArg)
+        
+        do {
+            if let category = try context.fetch(request).first {
+                return TrackerCategory(trackerCategoryCoreData: category)
+            } else {
+                throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Tracker not found"])
+            }
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToEditCategory
+        }
+    }
+
+    
+    func deleteTracker(at id: UUID) throws {
+        let request = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+        
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        do {
+            let trackers = try context.fetch(request)
+            for tracker in trackers {
+                context.delete(tracker)
+            }
+            try context.save()
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToDeleteTracker
+        }
+    }
+    
+    func add(_ tracker: Tracker, for category: TrackerCategory) throws {
+        do {
+            try trackerCategoryDataStore.add(tracker, for: category)
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToAddTrackerToCategory
+        }
+    }
+    
+    func update(_ tracker: Tracker, for category: TrackerCategory) throws {
+        do {
+            try trackerCategoryDataStore.update(tracker, for: category)
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToUpdateTracker
+        }
+    }
+    
+    func changePinnedState(for trackerId: UUID) throws {
+        do {
+            try trackerCategoryDataStore.changePinnedState(for: trackerId)
+        } catch {
+            throw TrackerCategoryDataProviderErrors.failedToChangePinnedState
         }
     }
 }

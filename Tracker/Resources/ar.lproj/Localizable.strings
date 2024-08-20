@@ -1,0 +1,29 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Pavel Popov on 20.08.2024.
+  
+*/
+"emptyState.title" = "ماذا سنتتبع؟";
+"delete" = "يمسح";
+"delete.confirmation" = "هل أنت متأكد أنك تريد حذف المتتبع؟";
+"cancel" = "يلغي";
+"editTracker" = "يحرر";
+"pinTracker" = "دبوس";
+"unpinTracker" = "إزالة التثبيت";
+"filters" = "المرشحات";
+"trackers" = "أجهزة التتبع";
+"statistics" = "إحصائيات";
+"filter.allTrackers" = "جميع أجهزة التتبع";
+"filter.trackersOnToday" = "متابعون لهذا اليوم";
+"filter.completed" = "مكتمل";
+"filter.uncompleted" = "غير مكتمل";
+"statistics.bestPeriod" = "أفضل فترة";
+"statistics.perfectDays" = "أيام مثالية";
+"statistics.habitsCompleted" = "تم الانتهاء من أجهزة التتبع";
+"statistics.averageHabitsPerDay" = "متوسط ​​القيمة";
+"tracker.day" = "يوم";
+"tracker.2,3,4day" = "يوم";
+"tracker.days" = "أيام";
+"search" = "يبحث";

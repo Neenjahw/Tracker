@@ -19,6 +19,7 @@ final class CreatingTrackerViewController: UIViewController {
         label.text = "Создание трекера"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
+        label.textColor = .label
         return label
     }()
     
@@ -29,6 +30,9 @@ final class CreatingTrackerViewController: UIViewController {
         button.setTitle("Привычка", for: .normal)
         button.layer.cornerRadius = UIConstants.createHabitButtonCornerRadius
         button.addTarget(self, action: #selector(didTapCreateHabitButton), for: .touchUpInside)
+        button.setTitleColor(UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .black : .white
+        }, for: .normal)
         return button
     }()
     
@@ -39,6 +43,9 @@ final class CreatingTrackerViewController: UIViewController {
         button.setTitle("Нерегулярное событие", for: .normal)
         button.layer.cornerRadius = UIConstants.createIrregularEventButtonCornerRadius
         button.addTarget(self, action: #selector(didTapCreateIrregularEventButton), for: .touchUpInside)
+        button.setTitleColor(UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .black : .white
+        }, for: .normal)
         return button
     }()
     
@@ -51,13 +58,13 @@ final class CreatingTrackerViewController: UIViewController {
     
     //MARK: - Private Methods
     @objc private func didTapCreateHabitButton() {
-        let habitViewController = HabitOrEventViewController()
+        let habitViewController = HabitOrEventViewController(isEditingTracker: false)
         habitViewController.isHabit = true
         present(habitViewController, animated: true)
     }
     
     @objc private func didTapCreateIrregularEventButton() {
-        let habitViewController = HabitOrEventViewController()
+        let habitViewController = HabitOrEventViewController(isEditingTracker: false)
         habitViewController.isHabit = false
         present(habitViewController, animated: true)
     }
@@ -67,7 +74,7 @@ final class CreatingTrackerViewController: UIViewController {
 extension CreatingTrackerViewController {
     
     private func setupViews() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         [titleLabel,
          createHabitButton,
          createIrregularEventButton].forEach {

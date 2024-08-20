@@ -43,6 +43,7 @@ final class CategoryViewController: UIViewController {
         label.text = "Новая категория"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
+        label.textColor = .label
         return label
     }()
     
@@ -55,6 +56,7 @@ final class CategoryViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.separatorColor = .ypGray2
         return tableView
     }()
     
@@ -70,6 +72,7 @@ final class CategoryViewController: UIViewController {
         label.numberOfLines = 2
         label.textAlignment = .center
         label.text = "Привычки и события можно \n объединить по смыслу"
+        label.textColor = .label
         return label
     }()
     
@@ -80,6 +83,9 @@ final class CategoryViewController: UIViewController {
         button.backgroundColor = .ypBlack
         button.layer.cornerRadius = UIConstants.addCategoryButtonCornerRadius
         button.addTarget(self, action: #selector(didTapAddCategoryButton), for: .touchUpInside)
+        button.setTitleColor(UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .black : .white
+        }, for: .normal)
         return button
     }()
     
@@ -139,10 +145,6 @@ final class CategoryViewController: UIViewController {
 
 //MARK: - UITableViewDataSource
 extension CategoryViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return viewModel.numberOfSections()
-    }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         setPlaceholderImage()
         return viewModel.numberOfRowsInSection(section)
@@ -235,7 +237,7 @@ extension CategoryViewController: AddCategoryViewControllerDelegate {
 extension CategoryViewController {
     
     private func setupViews() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         [titleLabel,
          tableView,
          placeholderImageView,

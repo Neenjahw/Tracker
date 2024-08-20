@@ -31,13 +31,13 @@ final class TrackerListCell: UICollectionViewCell {
     private var indexPath: IndexPath?
     
     //MARK: - UIModels
-    private lazy var trackerCardView: UIView = {
+    lazy var trackerCardView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = UIConstants.trackerCardViewCornerRadius
         return view
     }()
     
-    private let trackerCardEmojiLabel: UILabel = {
+    private lazy var trackerCardEmojiLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor(white: 1, alpha: 0.3)
         label.layer.cornerRadius = UIConstants.emojiLabelCornerRadius
@@ -45,6 +45,12 @@ final class TrackerListCell: UICollectionViewCell {
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.emojiLabelFontSize)
         return label
+    }()
+    
+    private lazy var trackerPinnedImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = .pin
+        return imageView
     }()
     
     private lazy var trackerCardLabel: UILabel = {
@@ -83,10 +89,11 @@ final class TrackerListCell: UICollectionViewCell {
     }
     
     //MARK: - Public Methods
-    func configure(with tracker: Tracker, isCompletedToday: Bool, completedDays: Int, at indexPath: IndexPath) {
+    func configure(with tracker: Tracker, isCompletedToday: Bool, completedDays: Int, isPinned: Bool, at indexPath: IndexPath) {
         trackerCardLabel.text = tracker.name
         trackerCardView.backgroundColor = tracker.color
         trackerCardEmojiLabel.text = tracker.emoji
+        trackerPinnedImage.isHidden = !isPinned
         daysCountLabel.text = pluralizeDays(completedDays)
         self.isCompletedToday = isCompletedToday
         self.trackerId = tracker.id
@@ -105,8 +112,8 @@ final class TrackerListCell: UICollectionViewCell {
         let baseImage = isCompletedToday ? UIImage(resource: .trackerDone).withTintColor(trackerColor) : UIImage(resource: .trackerPlus)
         
         if isCompletedToday {
-            let overlayImage = UIImage(resource: .trackerCheckmark).withTintColor(.white).withRenderingMode(.alwaysTemplate)
-            if let combined = combinedImage(baseImage: baseImage, overlayImage: overlayImage, overlayScale: 1.2) {
+            let overlayImage = UIImage(resource: .trackerCheckmark).withTintColor(.ypBackground).withRenderingMode(.alwaysTemplate)
+            if let combined = combinedImage(baseImage: baseImage, overlayImage: overlayImage, overlayScale: 1.1) {
                 trackerDoneButton.setImage(combined, for: .normal)
             }
         } else {
@@ -127,14 +134,18 @@ final class TrackerListCell: UICollectionViewCell {
     }
     
     private func pluralizeDays(_ count: Int) -> String {
+        let dayText = NSLocalizedString("tracker.day", comment: "Text displayed on day")
+        let twoThreeFourDaysText = NSLocalizedString("tracker.2,3,4day", comment: "Text displayed on 2, 3, 4 days")
+        let daysText = NSLocalizedString("tracker.days", comment: "Text displayed on days")
+        
         let remainder10 = count % 10
         let remainder100 = count % 100
         if remainder10 == 1 && remainder100 != 11 {
-            return "\(count) день"
+            return "\(count) \(dayText)"
         } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 2) {
-            return "\(count) дня"
+            return "\(count) \(twoThreeFourDaysText)"
         } else {
-            return "\(count) дней"
+            return "\(count) \(daysText)"
         }
     }
     
@@ -153,7 +164,6 @@ final class TrackerListCell: UICollectionViewCell {
 
 //MARK: - AutoLayout
 extension TrackerListCell {
-    
     private func setupViews() {
         [trackerCardView,
          daysCountLabel,
@@ -162,6 +172,7 @@ extension TrackerListCell {
             contentView.addSubview($0)
         }
         [trackerCardEmojiLabel,
+         trackerPinnedImage,
          trackerCardLabel].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             trackerCardView.addSubview($0)
@@ -179,6 +190,9 @@ extension TrackerListCell {
             trackerCardEmojiLabel.leadingAnchor.constraint(equalTo: trackerCardView.leadingAnchor, constant: 12),
             trackerCardEmojiLabel.widthAnchor.constraint(equalToConstant: 24),
             trackerCardEmojiLabel.heightAnchor.constraint(equalTo: trackerCardEmojiLabel.widthAnchor),
+            
+            trackerPinnedImage.topAnchor.constraint(equalTo: trackerCardView.topAnchor, constant: 12),
+            trackerPinnedImage.trailingAnchor.constraint(equalTo: trackerCardView.trailingAnchor, constant: -12),
             
             trackerCardLabel.leadingAnchor.constraint(equalTo: trackerCardView.leadingAnchor, constant: 12),
             trackerCardLabel.bottomAnchor.constraint(equalTo: trackerCardView.bottomAnchor, constant: -12),

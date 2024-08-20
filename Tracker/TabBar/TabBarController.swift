@@ -8,18 +8,21 @@ final class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .white
+        view.backgroundColor = .ypBackground
         tabBar.isTranslucent = false
+        
+        let trackersText = NSLocalizedString("trackers", comment: "Text displayed on trackers")
+        let statisticsText = NSLocalizedString("statistics", comment: "Text displayed on statistics")
         
         let trackerViewController = UINavigationController(rootViewController: TrackerListViewController())
         let statisticsViewController = StatisticsViewController()
         
         trackerViewController.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: trackersText,
             image: .trackerTabBarLogo,
             selectedImage: .trackerTabBarLogoSelected)
         statisticsViewController.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            title: statisticsText,
             image: .statisticsTabBarLogo,
             selectedImage: .statisticsTabBarLogoSelected)
         

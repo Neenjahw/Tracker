@@ -13,6 +13,10 @@ protocol TrackerRecordDataProviderProtocol {
     func add(trackerRecord: TrackerRecord) throws
     func delete(trackerRecord: TrackerRecord) throws
     func fetch() -> [TrackerRecord]
+    func calculateLongestStreak() throws -> Int
+    func calculatePerfectDays() throws -> Int
+    func calculateTotalHabitsCompleted() throws -> Int
+    func calculateAverageHabitsPerDay() throws -> Int
 }
 
 protocol TrackerRecordDataProviderDelegate: AnyObject {
@@ -25,6 +29,12 @@ final class TrackerRecordDataProvider: NSObject {
     //MARK: - TrackerDataProviderErrors
     enum TrackerRecordDataProviderErrors: Error {
         case failedToInitializeContext
+        case failedToDeleteTrackerRecord
+        case failedToAddTrackerRecord
+        case failedToCalculateLongestStreak
+        case failedToCalculatePerfectDays
+        case failedToCalculateTotalHabitsCompleted
+        case failedToCalculateAverageHabitsPerDay
     }
     
     //MARK: - Public Properties
@@ -68,7 +78,7 @@ extension TrackerRecordDataProvider: TrackerRecordDataProviderProtocol {
         do {
             try trackerRecordDataStore.add(trackerRecord: trackerRecord)
         } catch {
-            throw error
+            throw TrackerRecordDataProviderErrors.failedToAddTrackerRecord
         }
     }
     
@@ -76,12 +86,44 @@ extension TrackerRecordDataProvider: TrackerRecordDataProviderProtocol {
         do {
             try trackerRecordDataStore.delete(trackerRecord: trackerRecord)
         } catch {
-            throw error
+            throw TrackerRecordDataProviderErrors.failedToDeleteTrackerRecord
         }
     }
     
     func fetch() -> [TrackerRecord] {
         trackerRecordDataStore.fetch()
+    }
+    
+    func calculateLongestStreak() throws -> Int {
+        do {
+            return try trackerRecordDataStore.calculateLongestStreak()
+        } catch {
+            throw TrackerRecordDataProviderErrors.failedToCalculateLongestStreak
+        }
+    }
+    
+    func calculatePerfectDays() throws -> Int {
+        do {
+            return try trackerRecordDataStore.calculatePerfectDays()
+        } catch {
+            throw TrackerRecordDataProviderErrors.failedToCalculatePerfectDays
+        }
+    }
+    
+    func calculateTotalHabitsCompleted() throws -> Int {
+        do {
+            return try trackerRecordDataStore.calculateTotalHabitsCompleted()
+        } catch {
+            throw TrackerRecordDataProviderErrors.failedToCalculatePerfectDays
+        }
+    }
+    
+    func calculateAverageHabitsPerDay() throws -> Int {
+        do {
+            return try trackerRecordDataStore.calculateAverageHabitsPerDay()
+        } catch {
+            throw TrackerRecordDataProviderErrors.failedToCalculateAverageHabitsPerDay
+        }
     }
 }
 

@@ -12,6 +12,8 @@ public class TrackerCoreData: NSManagedObject {
     @NSManaged public var color: NSObject?
     @NSManaged public var schedule: NSObject?
     @NSManaged public var trackerCategory: TrackerCategoryCoreData?
+    @NSManaged public var isPinned: Bool
+    @NSManaged public var originalCategory: TrackerCategoryCoreData?
     
     @nonobjc public class func fetchRequest() -> NSFetchRequest<TrackerCoreData> {
         return NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")

@@ -26,7 +26,6 @@ final class FilterTrackersViewController: UIViewController {
     //MARK: - UIModels
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Фильтры"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
         return label
@@ -41,6 +40,7 @@ final class FilterTrackersViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.separatorColor = .ypGray2
         return tableView
     }()
     
@@ -62,6 +62,7 @@ final class FilterTrackersViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setConstraints()
+        localize()
     }
 }
 
@@ -71,15 +72,10 @@ extension FilterTrackersViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) as? FilterTrackerCell else { return }
         
-        let filterType: [FilterType] = [
-            .editAllTrackers,
-            .editTrackersOnToday,
-            .editCompletedTrackers,
-            .editUncompletedTrackers
-        ]
+        let filterTypes = FilterType.allValues
         
-        if indexPath.row < filterType.count {
-            delegate?.edit(filterType: filterType[indexPath.row])
+        if indexPath.row < filterTypes.count {
+            delegate?.edit(filterType: filterTypes[indexPath.row])
         }
         
         cell.setCheckMark()
@@ -101,19 +97,26 @@ extension FilterTrackersViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: FilterTrackerCell.filterTrackerCellIdentifier, for: indexPath) as? FilterTrackerCell else { return UITableViewCell() }
-        
-        let filterTitles = [
-            "Все трекеры",
-            "Трекеры на сегодня",
-            "Завершенные",
-            "Не завершенные"
-        ]
-        
-        if indexPath.row < filterTitles.count {
-            cell.textLabel?.text = filterTitles[indexPath.row]
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: FilterTrackerCell.filterTrackerCellIdentifier, for: indexPath) as? FilterTrackerCell else {
+            return UITableViewCell()
         }
-        
+
+        let filterTypes = FilterType.allValues
+
+        if indexPath.row < filterTypes.count {
+            let filterType = filterTypes[indexPath.row]
+            cell.textLabel?.text = filterType.localizedString
+            
+            let selectedFilterType = UserDefaults.standard.string(forKey: "filterType")
+            let selectedFilter = FilterType(rawValue: selectedFilterType ?? "")
+
+            if filterType == selectedFilter {
+                cell.setCheckMark()
+            } else {
+                cell.removeCheckMark()
+            }
+        }
+
         return cell
     }
     
@@ -126,7 +129,7 @@ extension FilterTrackersViewController: UITableViewDataSource {
 extension FilterTrackersViewController {
     
     private func setupViews() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         [titleLabel,
          tableView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -144,5 +147,13 @@ extension FilterTrackersViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
+    }
+}
+
+//MARK: - Localize
+extension FilterTrackersViewController {
+    func localize() {
+        let titleText = NSLocalizedString("filters", comment: "Text displayed on title")
+        titleLabel.text = titleText
     }
 }

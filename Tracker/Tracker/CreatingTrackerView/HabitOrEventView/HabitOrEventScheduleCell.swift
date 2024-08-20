@@ -23,6 +23,7 @@ final class HabitOrEventScheduleCell: UITableViewCell {
         label.text = "Расписание"
         label.textColor = .black
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
+        label.textColor = .label
         return label
     }()
     

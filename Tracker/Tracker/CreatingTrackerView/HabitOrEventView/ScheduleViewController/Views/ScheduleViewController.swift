@@ -29,6 +29,7 @@ final class ScheduleViewController: UIViewController {
         label.text = "Расписание"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
+        label.textColor = .label
         return label
     }()
     
@@ -42,6 +43,7 @@ final class ScheduleViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.separatorColor = .ypGray2
         return tableView
     }()
     
@@ -52,6 +54,9 @@ final class ScheduleViewController: UIViewController {
         button.setTitle("Готово", for: .normal)
         button.layer.cornerRadius = UIConstants.doneButtonCornerRadius
         button.addTarget(self, action: #selector(backToHabitViewController), for: .touchUpInside)
+        button.setTitleColor(UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .black : .white
+        }, for: .normal)
         return button
     }()
     
@@ -127,7 +132,7 @@ extension ScheduleViewController: ScheduleViewCellDelegate {
 extension ScheduleViewController {
     
     private func setupViews() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         [titleLabel,
          tableView,
          doneButton].forEach {

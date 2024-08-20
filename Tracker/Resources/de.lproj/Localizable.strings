@@ -1,0 +1,29 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Pavel Popov on 20.08.2024.
+  
+*/
+"emptyState.title" = "Was werden wir verfolgen?";
+"delete" = "Löschen";
+"delete.confirmation" = "Sind Sie sicher, dass Sie den Tracker löschen möchten?";
+"cancel" = "Stornieren";
+"editTracker" = "Bearbeiten";
+"pinTracker" = "Stift";
+"unpinTracker" = "Lösen";
+"filters" = "Filter";
+"trackers" = "Tracker";
+"statistics" = "Statistiken";
+"filter.allTrackers" = "Alle Tracker";
+"filter.trackersOnToday" = "Tracker für heute";
+"filter.completed" = "Vollendet";
+"filter.uncompleted" = "Nicht abgeschlossen";
+"statistics.bestPeriod" = "Beste Zeit";
+"statistics.perfectDays" = "Ideale Tage";
+"statistics.habitsCompleted" = "Tracker abgeschlossen";
+"statistics.averageHabitsPerDay" = "Durchschnittswert";
+"tracker.day" = "Tag";
+"tracker.2,3,4day" = "Tag";
+"tracker.days" = "Tage";
+"search" = "Suchen";

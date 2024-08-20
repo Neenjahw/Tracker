@@ -22,6 +22,7 @@ final class HabitOrEventCategoryCell: UITableViewCell {
         label.text = "Категория"
         label.textColor = .black
         label.font = .systemFont(ofSize: UIConstants.titleLabelFontSize)
+        label.textColor = .label
         return label
     }()
     

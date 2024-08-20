@@ -33,16 +33,12 @@ final class CategoryViewModel {
         trackerCategoryDataProvider?.fetchCategories()
     }
     
-    func numberOfSections() -> Int {
-        trackerCategoryDataProvider?.numberOfSections ?? 0
-    }
-    
     func numberOfRowsInSection(_ section: Int) -> Int {
         trackerCategoryDataProvider?.numberOfRowsInSection(section) ?? 0
     }
     
     func editCategory(at indexPath: IndexPath) -> TrackerCategory? {
-        trackerCategoryDataProvider?.object(at: indexPath)
+        return trackerCategoryDataProvider?.object(at: indexPath)
     }
     
     func deleteCategory(at indexPath: IndexPath) {

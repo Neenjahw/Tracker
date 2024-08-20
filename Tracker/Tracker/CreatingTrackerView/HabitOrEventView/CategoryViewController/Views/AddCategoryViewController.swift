@@ -53,6 +53,10 @@ final class AddCategoryViewController: UIViewController {
         button.isEnabled = false
         button.layer.cornerRadius = UIConstants.createButtonCornerRadius
         button.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
+        button.setTitleColor(UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .black : .white
+        }, for: .normal)
+        button.setTitleColor(.white, for: .disabled)
         return button
     }()
     
@@ -130,7 +134,7 @@ extension AddCategoryViewController: UITextFieldDelegate {
 extension AddCategoryViewController {
     
     private func setupViews() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         [titleLabel,
          textField,
          createButton].forEach {

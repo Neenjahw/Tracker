@@ -9,6 +9,7 @@ struct Tracker {
     let emoji: String
     let schedule: [DayOfWeek]
     let isHabit: Bool
+    let isPinned: Bool
     
     init(trackerCoreData: TrackerCoreData) {
         guard let id = trackerCoreData.id,
@@ -26,14 +27,16 @@ struct Tracker {
         self.emoji = emoji
         self.schedule = schedule
         self.isHabit = trackerCoreData.isHabit
+        self.isPinned = trackerCoreData.isPinned
     }
     
-    init(id: UUID, name: String, color: UIColor, emoji: String, schedule: [DayOfWeek], isHabit: Bool) {
+    init(id: UUID, name: String, color: UIColor, emoji: String, schedule: [DayOfWeek], isHabit: Bool, isPinned: Bool) {
         self.id = id
         self.name = name
         self.color = color
         self.emoji = emoji
         self.schedule = schedule
         self.isHabit = isHabit
+        self.isPinned = isPinned
     }
 }
