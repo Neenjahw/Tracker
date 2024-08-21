@@ -98,9 +98,9 @@ final class CategoryViewController: UIViewController {
     
     //MARK: - Private Methods
     private func bind() {
-        viewModel.categoryCreated = { [weak self] insertedIndexPaths in
+        viewModel.categoryCreated = { [weak self] _ in
             guard let self = self else { return }
-            tableView.insertRows(at: insertedIndexPaths, with: .automatic)
+            tableView.reloadData()
         }
         
         viewModel.categoryUpdated = { [weak self] updatedIndexPaths in

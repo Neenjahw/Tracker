@@ -28,17 +28,27 @@ final class CategoryViewModel {
         }
     }()
     
+    private var categories: [TrackerCategory] {
+        let allCategories = trackerCategoryDataProvider?.fetchCategories() ?? []
+        return allCategories.filter { $0.title != "Закрепленные" }
+    }
+    
     // MARK: - Public Methods
     func fetchCategories() -> [TrackerCategory]? {
-        trackerCategoryDataProvider?.fetchCategories()
+        let allCategories = trackerCategoryDataProvider?.fetchCategories() ?? []
+        
+        let filteredCategories = allCategories.filter { $0.title != "Закрепленные" }
+        
+        return filteredCategories
     }
     
     func numberOfRowsInSection(_ section: Int) -> Int {
-        trackerCategoryDataProvider?.numberOfRowsInSection(section) ?? 0
+        return categories.count
     }
     
     func editCategory(at indexPath: IndexPath) -> TrackerCategory? {
-        return trackerCategoryDataProvider?.object(at: indexPath)
+        guard indexPath.row < categories.count else { return nil }
+        return categories[indexPath.row]
     }
     
     func deleteCategory(at indexPath: IndexPath) {

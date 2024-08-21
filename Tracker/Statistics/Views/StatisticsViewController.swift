@@ -82,6 +82,7 @@ final class StatisticsViewController: UIViewController {
         placeholderImage.isHidden = hasData
         placeholderLabel.isHidden = hasData
         tableView.isHidden = !hasData
+        tableView.reloadData()
     }
 }
 
